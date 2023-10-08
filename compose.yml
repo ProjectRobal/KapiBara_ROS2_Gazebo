@@ -1,0 +1,28 @@
+version: '3.9'
+
+networks:
+  internal:
+    name: "robal_internal"
+  external:
+    name: "robal_internal"
+    driver: bridge
+
+services:
+
+  ros:
+    container_name: robal_ros2
+    build:
+      context: ./
+      dockerfile: ./Docker/Dockerfile
+    env_file:
+      - ./env/env
+    volumes:
+      - ./src:/app/src
+    networks:
+      - internal
+      - external
+    expose:
+      - 3000
+    ports:
+      - "3000:22"
+    
