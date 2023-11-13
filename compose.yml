@@ -4,7 +4,7 @@ networks:
   internal:
     name: "robal_internal"
   external:
-    name: "robal_internal"
+    name: "robal_external"
     driver: bridge
 
 services:
@@ -18,11 +18,14 @@ services:
       - ./env/env
     volumes:
       - ./src:/app/src
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
     networks:
       - internal
       - external
     expose:
       - 3000
+      - 5900
     ports:
-      - "3000:22"
+      - 3000:22
+      - 5900:5900
     
