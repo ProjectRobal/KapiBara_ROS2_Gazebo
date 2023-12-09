@@ -12,11 +12,11 @@ services:
   ros:
     container_name: robal_ros2
     build:
-      context: ./
-      dockerfile: ./Docker/Dockerfile
+      dockerfile: ./Dockerfile
     env_file:
       - ./env/env
     volumes:
+      - ./dependencies/:/app/dep
       - ./src:/app/src
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
     networks:

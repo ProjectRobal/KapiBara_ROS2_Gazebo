@@ -1,2 +1,0 @@
-ros-foxy-turtlesim
-ros-foxy-rviz2
