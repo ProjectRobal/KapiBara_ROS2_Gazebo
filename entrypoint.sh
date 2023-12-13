@@ -5,7 +5,7 @@
 
 /usr/sbin/sshd -p 3000
 
-source /opt/ros/foxy/setup.bash
+source /opt/ros/iron/setup.bash
 source /app/src/workspace/install/setup.bash
 
 apt update -y
