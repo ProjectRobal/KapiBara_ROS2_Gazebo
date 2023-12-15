@@ -7,7 +7,6 @@
     <!-- <xacro:include filename="example_gazebo.xacro" /> -->
 
 
-
     <!-- Gazebo is unable to use the same <material> tags that are already in the URDF (that RViz uses). -->
     <!-- Instead, we need to add gazebo tags for our links that refer to Gazebo materials -->
 

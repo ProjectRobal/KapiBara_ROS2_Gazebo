@@ -1,3 +1,6 @@
 python3-pip
 ros-iron-turtlesim
 ros-iron-rviz2
+ros-iron-joint-state-publisher-gui
+ros-iron-gazebo-ros-pkgs
+ros-iron-moveit
