@@ -1,0 +1,8 @@
+source;share/KapiBara/hook/cmake_prefix_path.ps1
+source;share/KapiBara/hook/cmake_prefix_path.dsv
+source;share/KapiBara/hook/cmake_prefix_path.sh
+source;share/KapiBara/local_setup.bash
+source;share/KapiBara/local_setup.dsv
+source;share/KapiBara/local_setup.ps1
+source;share/KapiBara/local_setup.sh
+source;share/KapiBara/local_setup.zsh

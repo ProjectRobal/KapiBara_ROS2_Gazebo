@@ -8,10 +8,14 @@
 source /opt/ros/iron/setup.bash
 source /app/src/workspace/install/setup.bash
 
+
 apt update -y
 
 xargs apt -y install < /app/dep/packages.txt
 
+
 python3 -m pip install -r /app/dep/python.txt
 
-ros2 launch /app/src/launch/launch.py
+cd /app/src
+
+ros2 launch launch/launch.py

@@ -4,22 +4,19 @@ from launch import LaunchDescription
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 
-
 from launch_ros.actions import Node
 import xacro
-
 
 def generate_launch_description():
 
     # Specify the name of the package and path to xacro file within the package
-    pkg_name = 'urdf_example'
-    file_subpath = 'description/example_robot.urdf.xacro'
+    pkg_name = 'kapibara'
+    file_subpath = 'description/kapibara.urdf.xacro'
 
 
     # Use xacro to process the file
-    xacro_file = os.path.join(get_package_share_directory(pkg_name),file_subpath)
+    xacro_file = os.path.join("/app/src/workspace/src/kapibara",file_subpath)
     robot_description_raw = xacro.process_file(xacro_file).toxml()
-
 
     # Configure the node
     node_robot_state_publisher = Node(
@@ -36,23 +33,22 @@ def generate_launch_description():
         PythonLaunchDescriptionSource([os.path.join(
             get_package_share_directory('gazebo_ros'), 'launch'), '/gazebo.launch.py']),
         )
-
-
-    spawn_entity = Node(package='gazebo_ros', executable='spawn_entity.py',
-                    arguments=['-topic', 'robot_description',
-                                '-entity', 'my_bot'],
+    
+    state_publisher = Node(package='joint_state_publisher_gui', executable='joint_state_publisher_gui',
+                    arguments=[],
                     output='screen')
 
 
-
-
+    rviz = Node(package='rviz2', executable='rviz2',
+                    arguments=[],
+                    output='screen')
 
 
     # Run the node
     return LaunchDescription([
-        gazebo,
         node_robot_state_publisher,
-        spawn_entity
+        rviz,
+        state_publisher
     ])
 
 

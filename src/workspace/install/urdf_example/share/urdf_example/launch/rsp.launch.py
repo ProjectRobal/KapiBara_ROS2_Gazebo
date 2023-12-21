@@ -1,1 +1,0 @@
-/app/src/workspace/urdf_example/launch/rsp.launch.py
