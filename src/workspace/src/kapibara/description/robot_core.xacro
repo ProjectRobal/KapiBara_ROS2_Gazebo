@@ -38,15 +38,19 @@
             <material name="black" />
         </visual>
         <collision>
-            <origin xyz="0 0 0" />
+            <origin xyz="0 0 0.02" />
             <geometry>
                 <box size="0.150 0.083 0.033" />
             </geometry>
         </collision>
         <xacro:inertial_box mass="0.65" x="0.15" y="0.083" z="0.033" >
-            <origin xyz="0 0 0" rpy="0 0 0" />
+            <origin xyz="0 0 0.02" rpy="0 0 0" />
         </xacro:inertial_box>
     </link>
+
+    <gazebo reference="chassis">
+        <material>Gazebo/Black</material>
+    </gazebo>
 
     <!-- Base -->
 
@@ -65,15 +69,19 @@
             <material name="orange" />
         </visual>
         <collision>
-            <origin xyz="0 0 0.05" />
+            <origin xyz="-0.02 0 0.07" />
             <geometry>
                 <box size="0.279 0.134 0.161" />
             </geometry>
         </collision>
         <xacro:inertial_box mass="1.15" x="0.279" y="0.134" z="0.161" >
-            <origin xyz="0 0 0.05" rpy="0 0 0" />
+            <origin xyz="-0.02 0 0.07" rpy="0 0 0" />
         </xacro:inertial_box>
     </link>
+    
+    <gazebo reference="base">
+        <material>Gazebo/Orange</material>
+    </gazebo>
 
     <!-- LEFT WHEEL LINK -->
 

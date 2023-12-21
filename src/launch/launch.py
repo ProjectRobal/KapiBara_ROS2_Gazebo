@@ -27,8 +27,6 @@ def generate_launch_description():
         'use_sim_time': True}] # add other parameters here if required
     )
 
-
-
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
             get_package_share_directory('gazebo_ros'), 'launch'), '/gazebo.launch.py']),
@@ -42,13 +40,19 @@ def generate_launch_description():
     rviz = Node(package='rviz2', executable='rviz2',
                     arguments=[],
                     output='screen')
+    
+    spawn = Node(package='gazebo_ros', executable='spawn_entity.py',
+                    arguments=["-topic","robot_description","-entity","kapibara"],
+                    output='screen')
 
 
     # Run the node
     return LaunchDescription([
         node_robot_state_publisher,
-        rviz,
-        state_publisher
+        rviz
+        #gazebo,
+        #state_publisher,
+        #spawn
     ])
 
 
