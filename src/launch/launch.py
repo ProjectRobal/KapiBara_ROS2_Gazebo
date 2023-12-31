@@ -44,15 +44,29 @@ def generate_launch_description():
     spawn = Node(package='gazebo_ros', executable='spawn_entity.py',
                     arguments=["-topic","robot_description","-entity","kapibara"],
                     output='screen')
+    
+    diff_drive_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["diff_cont"],
+    )
+
+    joint_broad_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["joint_broad"],
+    )
 
 
     # Run the node
     return LaunchDescription([
         node_robot_state_publisher,
-        rviz
-        #gazebo,
-        #state_publisher,
-        #spawn
+        #rviz
+        gazebo,
+        state_publisher,
+        spawn,
+        diff_drive_spawner,
+        joint_broad_spawner
     ])
 
 

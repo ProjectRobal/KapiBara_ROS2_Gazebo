@@ -16,6 +16,7 @@ services:
     env_file:
       - ./env/env
     volumes:
+      - ./commands/:/app/cmd
       - ./dependencies/:/app/dep
       - ./src:/app/src
       - /tmp/.X11-unix:/tmp/.X11-unix:rw

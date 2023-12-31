@@ -23,19 +23,21 @@ RUN apt install ros-iron-desktop python3-argcomplete -y
 RUN apt install ros-dev-tools -y
 RUN apt install python3-colcon-common-extensions -y
 
+COPY ./dependencies /app/dep
+
+RUN apt update -y
+
+RUN xargs apt -y install < /app/dep/packages.txt
+
 RUN mkdir -p /app/src
+
+RUN mkdir -p /app/cmd
 
 RUN mkdir -p /app/src/workspace
 
 COPY --chmod=755 ./entrypoint.sh /entrypoint.sh
-COPY ./Docker/* /usr/local/bin/
-
 
 RUN chmod a+x ./entrypoint.sh
-RUN chmod a+x /usr/local/bin/create_workspace.sh
-RUN chmod a+x /usr/local/bin/create_package.sh
-RUN chmod a+x /usr/local/bin/build_packages.sh
-RUN chmod a+x /usr/local/bin/install_package.sh
-RUN chmod a+x /usr/local/bin/run_cmd.sh
+RUN chmod -R a+x /app/cmd
 
 CMD [ "./entrypoint.sh" ]

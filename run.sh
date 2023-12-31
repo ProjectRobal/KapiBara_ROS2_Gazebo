@@ -13,13 +13,17 @@ elif [ "$arg" = "build" ]; then
 
 docker compose -f compose.yml build
 
-elif [ "$arg" = "run" ]; then
+elif [ "$arg" = "cmd" ]; then
 
-docker compose -f compose.yml exec ros run_cmd.sh "${@:2}"
+docker compose -f compose.yml exec ros /app/cmd/run_cmd.sh "${@:2}"
 
 elif [ "$arg" = "exec" ]; then
 
 docker compose -f compose.yml exec ros "${@:2}"
+
+elif [ "$arg" = "run" ]; then
+
+docker compose -f compose.yml run ros /app/cmd/run_cmd.sh "${@:2}"
 
 elif [ "$arg" = "debug" ]; then
 
