@@ -15,7 +15,7 @@ def generate_launch_description():
 
 
     # Use xacro to process the file
-    xacro_file = os.path.join("/app/src/workspace/src/kapibara",file_subpath)
+    xacro_file = os.path.join(get_package_share_directory("kapibara"),file_subpath)
     robot_description_raw = xacro.process_file(xacro_file).toxml()
 
     # Configure the node
@@ -61,12 +61,12 @@ def generate_launch_description():
     # Run the node
     return LaunchDescription([
         node_robot_state_publisher,
-        #rviz
-        gazebo,
+        rviz,
+        #gazebo,
         state_publisher,
-        spawn,
-        diff_drive_spawner,
-        joint_broad_spawner
+        #spawn,
+        #diff_drive_spawner,
+        #joint_broad_spawner
     ])
 
 
