@@ -7,6 +7,8 @@
 
     <xacro:include filename="lasers_joints.xacro" />
 
+    <xacro:include filename="imu.xacro" />
+
     <!-- <xacro:include filename="ros2_control.xacro" /> -->
 
     <!-- <xacro:include filename="gazebo control.xacro" /> -->

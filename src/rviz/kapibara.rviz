@@ -91,11 +91,25 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        floor_laser_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         front_left_laser_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
+        front_right_laser_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        imu_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         left_ear:
           Alpha: 1
           Show Axes: false
@@ -132,6 +146,16 @@ Visualization Manager:
           Show Trail: false
           Value: true
         right_wheel3:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        side_left_laser_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        side_right_laser_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -187,7 +211,13 @@ Visualization Manager:
           Value: true
         chassis:
           Value: true
+        floor_laser_link:
+          Value: true
         front_left_laser_link:
+          Value: true
+        front_right_laser_link:
+          Value: true
+        imu_link:
           Value: true
         left_ear:
           Value: true
@@ -205,6 +235,10 @@ Visualization Manager:
           Value: true
         right_wheel3:
           Value: true
+        side_left_laser_link:
+          Value: true
+        side_right_laser_link:
+          Value: true
       Marker Scale: 1
       Name: TF
       Show Arrows: true
@@ -217,12 +251,22 @@ Visualization Manager:
               camera_link:
                 camera_link_optical:
                   {}
+              floor_laser_link:
+                {}
               front_left_laser_link:
+                {}
+              front_right_laser_link:
                 {}
               left_ear:
                 {}
               righ_ear:
                 {}
+              side_left_laser_link:
+                {}
+              side_right_laser_link:
+                {}
+            imu_link:
+              {}
             left_wheel1:
               {}
             left_wheel2:
@@ -283,25 +327,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 1.9607460498809814
+      Distance: 0.286414235830307
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.23509974777698517
-        Y: -0.17507922649383545
-        Z: -0.010772044770419598
+        X: -0.19687284529209137
+        Y: -0.17136073112487793
+        Z: 0.0741141214966774
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.6353983283042908
+      Pitch: 0.585398256778717
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.2422194480896
+      Yaw: 3.2022180557250977
     Saved: ~
 Window Geometry:
   Displays:
