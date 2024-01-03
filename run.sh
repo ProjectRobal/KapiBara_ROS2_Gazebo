@@ -9,6 +9,14 @@ if [ "$arg" = "start" ]; then
 
 docker compose -f compose.yml up
 
+elif [ "$arg" = "purge" ]; then
+
+docker compose -f compose.yml down
+
+elif [ "$arg" = "rebuild" ]; then
+
+docker compose -f compose.yml build --no-cache
+
 elif [ "$arg" = "build" ]; then
 
 docker compose -f compose.yml build
@@ -31,22 +39,22 @@ docker compose -f compose.yml exec ros bash
 
 elif [ "$arg" = "gazebo" ]; then
 
-docker compose -f compose.yml exec ros run_cmd.sh ros2 launch gazebo_ros gazebo.launch.py
+docker compose -f compose.yml exec ros /app/cmd/run_cmd.sh ros2 launch gazebo_ros gazebo.launch.py
 
 elif [ "$arg" = "topics" ]; then
 
-docker compose -f compose.yml exec ros run_cmd.sh ros2 topic list -t
+docker compose -f compose.yml exec ros /app/cmd/run_cmd.sh ros2 topic list -t
 
 elif [ "$arg" = "echo" ]; then
 
-docker compose -f compose.yml exec ros run_cmd.sh ros2 topic echo "${@:2}"
+docker compose -f compose.yml exec ros /app/cmd/run_cmd.sh ros2 topic echo "${@:2}"
 
 elif [ "$arg" = "info" ]; then
 
-docker compose -f compose.yml exec ros run_cmd.sh ros2 topic info "${@:2}"
+docker compose -f compose.yml exec ros /app/cmd/run_cmd.sh ros2 topic info "${@:2}"
 
 elif [ "$arg" = "publish" ]; then
 
-docker compose -f compose.yml exec ros run_cmd.sh ros2 topic pub --once "${@:2}"
+docker compose -f compose.yml exec ros /app/cmd/run_cmd.sh ros2 topic pub --once "${@:2}"
 
 fi

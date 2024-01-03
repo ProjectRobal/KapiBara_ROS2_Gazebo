@@ -18,15 +18,21 @@ services:
     volumes:
       - ./commands/:/app/cmd
       - ./dependencies/:/app/dep
-      - ./src:/app/src
+      - ./src:/app/src:rw
+      - /dev/shm:/dev/shm
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
     networks:
       - internal
       - external
+
+    devices:
+      - "/dev/kfd:/dev/kfd"
+      - "/dev/dri/:/dev/dri/"
+
+    group_add:
+      - video
     expose:
-      - 3000
       - 5900
     ports:
-      - 3000:22
       - 5900:5900
     

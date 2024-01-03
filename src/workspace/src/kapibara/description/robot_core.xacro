@@ -33,7 +33,7 @@
         <visual>
             <origin xyz="0 0 0" />
             <geometry>
-                <mesh filename="package://kapibara/meshes/Bottom.stl" scale="0.001 0.001 0.001" />
+                <mesh filename="file://$(find kapibara)/meshes/Bottom.stl" scale="0.001 0.001 0.001" />
             </geometry>
             <material name="black" />
         </visual>
@@ -64,7 +64,7 @@
         <visual>
             <origin xyz="0 0 0.05" />
             <geometry>
-                <mesh filename="package://kapibara/meshes/Top.stl" scale="0.001 0.001 0.001" />
+                <mesh filename="file://$(find kapibara)/meshes/Top.stl" scale="0.001 0.001 0.001" />
             </geometry>
             <material name="orange" />
         </visual>
