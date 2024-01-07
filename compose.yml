@@ -9,16 +9,33 @@ networks:
 
 services:
 
-  ros:
-    container_name: robal_ros2
+
+  control:
+    container_name: kapibara_control
     build:
       dockerfile: ./Dockerfile
+      context: ./control
     env_file:
-      - ./env/env
+      - ./control/env/env
     volumes:
-      - ./commands/:/app/cmd
-      - ./dependencies/:/app/dep
-      - ./src:/app/src:rw
+      - ./control/commands/:/app/cmd
+      - ./control/dependencies/:/app/dep
+      - ./control/src:/app/src:rw
+    networks:
+      - internal
+      - external
+
+  gazebo:
+    container_name: kapibara_gazebo
+    build:
+      dockerfile: ./Dockerfile
+      context: ./gazebo
+    env_file:
+      - ./gazebo/env/env
+    volumes:
+      - ./gazebo/commands/:/app/cmd
+      - ./gazebo/dependencies/:/app/dep
+      - ./gazebo/src:/app/src:rw
       - /dev/shm:/dev/shm
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
     networks:
@@ -31,8 +48,4 @@ services:
 
     group_add:
       - video
-    expose:
-      - 5900
-    ports:
-      - 5900:5900
     
