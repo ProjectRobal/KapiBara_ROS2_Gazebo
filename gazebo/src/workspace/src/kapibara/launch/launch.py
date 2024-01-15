@@ -46,41 +46,33 @@ def generate_launch_description():
                     arguments=[],
                     output='screen')
     
-    spawn = Node(
-        package='gazebo_ros', executable='spawn_entity.py',
+    spawn = Node(package='gazebo_ros', executable='spawn_entity.py',
                     arguments=["-topic","/robot_description","-entity","kapibara","-timeout","240"],
-                    output='screen',
-                
-                    )
+                    output='screen')
     
     diff_drive_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["motors","--controller-manager-timeout","240"],
+        arguments=["diff_cont"],
     )
 
     joint_broad_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["joint_broad","--controller-manager-timeout","240"],
+        arguments=["joint_broad"],
     )
 
-    kapibara_test_node= Node(
-        package="kapibara",
-        executable="fusion.py",
-        arguments=[]
-    )
+
 
     # Run the node
     return LaunchDescription([
-        #kapibara_test_node
         gazebo,
         node_robot_state_publisher,
-        #rviz,
-        #state_publisher,
+        rviz,
+        state_publisher,
         spawn,
-        diff_drive_spawner,
-        joint_broad_spawner
+        #diff_drive_spawner,
+        #joint_broad_spawner
     ])
 
 
