@@ -2,8 +2,10 @@ import os
 import logging
 from ament_index_python.packages import get_package_share_directory,get_package_prefix
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription
+from launch.actions import IncludeLaunchDescription,TimerAction,RegisterEventHandler
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import Command
+from launch.event_handlers import OnProcessStart
 
 from launch_ros.actions import Node
 import xacro
@@ -21,39 +23,47 @@ def generate_launch_description():
     xacro_file = os.path.join(get_package_share_directory(pkg_name),file_subpath)
     robot_description_raw = xacro.process_file(xacro_file).toxml()
 
-    gazebo_env = SetEnvironmentVariable("GAZEBO_MODEL_PATH", os.path.join(get_package_prefix("kapibara"), "share"))
-
     # Configure the node
     node_robot_state_publisher = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
         output='screen',
         parameters=[{'robot_description': robot_description_raw,
-        'use_sim_time': True}] # add other parameters here if required
+        'use_sim_time': False}] # add other parameters here if required
     )
 
-    gazebo = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([os.path.join(
-            get_package_share_directory('gazebo_ros'), 'launch', 'gazebo.launch.py')]),
-        )
-    
+    robot_description = Command(['ros2 param get --hide-type /robot_state_publisher robot_description'])
+
+
+    controller_params_file = os.path.join(get_package_share_directory(pkg_name),'config','my_controllers.yaml')
+
+
     state_publisher = Node(package='joint_state_publisher_gui', executable='joint_state_publisher_gui',
                     arguments=[],
                     output='screen')
 
+    controller_manager = Node(
+        package="controller_manager",
+        executable="ros2_control_node",
+        parameters=[{"roboto_description": robot_description},
+                    controller_params_file]
+    )
 
-    rviz = Node(package='rviz2', executable='rviz2',
-                    arguments=[],
-                    output='screen')
-    
-    spawn = Node(package='gazebo_ros', executable='spawn_entity.py',
-                    arguments=["-topic","/robot_description","-entity","kapibara","-timeout","240"],
-                    output='screen')
+    delayed_controller_manager = TimerAction(period=3.0,actions=[
+        controller_manager
+    ])
     
     diff_drive_spawner = Node(
         package="controller_manager",
         executable="spawner",
         arguments=["diff_cont"],
+    )
+
+    delayed_diff_drive_spawner= RegisterEventHandler(
+        event_handler=OnProcessStart(
+            target_action=controller_manager,
+            on_start=[diff_drive_spawner]
+        )
     )
 
     joint_broad_spawner = Node(
@@ -62,17 +72,21 @@ def generate_launch_description():
         arguments=["joint_broad"],
     )
 
+    delayed_joint_broad_spawner= RegisterEventHandler(
+        event_handler=OnProcessStart(
+            target_action=controller_manager,
+            on_start=[joint_broad_spawner]
+        )
+    )
 
+  
 
     # Run the node
     return LaunchDescription([
-        gazebo,
         node_robot_state_publisher,
-        rviz,
-        state_publisher,
-        spawn,
-        #diff_drive_spawner,
-        #joint_broad_spawner
+        delayed_controller_manager,
+        delayed_diff_drive_spawner,
+        delayed_joint_broad_spawner
     ])
 
 

@@ -19,7 +19,7 @@ def generate_launch_description():
 
     # Use xacro to process the file
     xacro_file = os.path.join(get_package_share_directory(pkg_name),file_subpath)
-    robot_description_raw = xacro.process_file(xacro_file).toxml()
+    robot_description_raw = xacro.process_file(xacro_file, mappings={"sim_mode": "true"}).toxml()
 
     gazebo_env = SetEnvironmentVariable("GAZEBO_MODEL_PATH", os.path.join(get_package_prefix("kapibara"), "share"))
 
@@ -46,47 +46,33 @@ def generate_launch_description():
                     arguments=[],
                     output='screen')
     
-    spawn = Node(
-        package='gazebo_ros', executable='spawn_entity.py',
+    spawn = Node(package='gazebo_ros', executable='spawn_entity.py',
                     arguments=["-topic","/robot_description","-entity","kapibara","-timeout","240"],
-                    output='screen',
-                
-                    )
+                    output='screen')
     
     diff_drive_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["motors","--controller-manager-timeout","240"],
-        # it doesn't work:
-        remappings=[
-            ("/motors/cmd_vel_unstamped","/KapiBara/motors/velocity"),
-            ("/motors/odom","/KapiBara/motors/odom"),
-            ("/motors/transition_events","/KapiBara/motors/transition_events")
-            ]
+        arguments=["diff_cont"],
     )
 
     joint_broad_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["joint_broad","--controller-manager-timeout","240"],
+        arguments=["joint_broad"],
     )
 
-    kapibara_test_node= Node(
-        package="kapibara",
-        executable="fusion.py",
-        arguments=[]
-    )
+
 
     # Run the node
     return LaunchDescription([
-        #kapibara_test_node
         gazebo,
         node_robot_state_publisher,
-        #rviz,
-        #state_publisher,
+        rviz,
+        state_publisher,
         spawn,
-        diff_drive_spawner,
-        joint_broad_spawner
+        #diff_drive_spawner,
+        #joint_broad_spawner
     ])
 
 
