@@ -19,7 +19,7 @@ def generate_launch_description():
 
     # Use xacro to process the file
     xacro_file = os.path.join(get_package_share_directory(pkg_name),file_subpath)
-    robot_description_raw = xacro.process_file(xacro_file, mappings={"sim_mode": "true"}).toxml()
+    robot_description_raw = xacro.process_file(xacro_file).toxml()
 
     gazebo_env = SetEnvironmentVariable("GAZEBO_MODEL_PATH", os.path.join(get_package_prefix("kapibara"), "share"))
 
@@ -53,13 +53,13 @@ def generate_launch_description():
     diff_drive_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["diff_cont"],
+        arguments=["motors",'--controller-manager-timeout','240'],
     )
 
     joint_broad_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["joint_broad"],
+        arguments=["joint_broad",'--controller-manager-timeout','240'],
     )
 
 
@@ -68,11 +68,11 @@ def generate_launch_description():
     return LaunchDescription([
         gazebo,
         node_robot_state_publisher,
-        rviz,
-        state_publisher,
+        #rviz,
+        #state_publisher,
         spawn,
-        #diff_drive_spawner,
-        #joint_broad_spawner
+        diff_drive_spawner,
+        joint_broad_spawner
     ])
 
 

@@ -8,23 +8,6 @@ networks:
     driver: bridge
 
 services:
-
-
-  control:
-    container_name: kapibara_control
-    build:
-      dockerfile: ./Dockerfile
-      context: ./control
-    env_file:
-      - ./control/env/env
-    volumes:
-      - ./control/commands/:/app/cmd
-      - ./control/dependencies/:/app/dep
-      - ./control/src:/app/src:rw
-    networks:
-      - internal
-      - external
-
   gazebo:
     container_name: kapibara_gazebo
     build:

@@ -14,79 +14,18 @@ def generate_launch_description():
 
     # Specify the name of the package and path to xacro file within the package
     pkg_name = 'kapibara'
-    file_subpath = 'description/kapibara.urdf.xacro'
 
-
-    # Use xacro to process the file
-    xacro_file = os.path.join(get_package_share_directory(pkg_name),file_subpath)
-    robot_description_raw = xacro.process_file(xacro_file).toxml()
-
-    gazebo_env = SetEnvironmentVariable("GAZEBO_MODEL_PATH", os.path.join(get_package_prefix("kapibara"), "share"))
-
-    # Configure the node
-    node_robot_state_publisher = Node(
-        package='robot_state_publisher',
-        executable='robot_state_publisher',
-        output='screen',
-        parameters=[{'robot_description': robot_description_raw,
-        'use_sim_time': True}] # add other parameters here if required
-    )
-
-    gazebo = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([os.path.join(
-            get_package_share_directory('gazebo_ros'), 'launch', 'gazebo.launch.py')]),
-        )
-    
-    state_publisher = Node(package='joint_state_publisher_gui', executable='joint_state_publisher_gui',
-                    arguments=[],
-                    output='screen')
-
-
-    rviz = Node(package='rviz2', executable='rviz2',
-                    arguments=[],
-                    output='screen')
-    
-    spawn = Node(
-        package='gazebo_ros', executable='spawn_entity.py',
-                    arguments=["-topic","/robot_description","-entity","kapibara","-timeout","240"],
-                    output='screen',
-                
-                    )
-    
-    diff_drive_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["motors","--controller-manager-timeout","240"],
-        # it doesn't work:
-        remappings=[
-            ("/motors/cmd_vel_unstamped","/KapiBara/motors/velocity"),
-            ("/motors/odom","/KapiBara/motors/odom"),
-            ("/motors/transition_events","/KapiBara/motors/transition_events")
-            ]
-    )
-
-    joint_broad_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["joint_broad","--controller-manager-timeout","240"],
-    )
-
-    kapibara_test_node= Node(
-        package="kapibara",
-        executable="fusion.py",
-        arguments=[]
-    )
+    launch=IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([
+            os.path.join(
+            get_package_share_directory(pkg_name),'launch','launch.sim..py')
+        ]
+    ))
 
     # Run the node
     return LaunchDescription([
         #kapibara_test_node
-        gazebo,
-        node_robot_state_publisher,
-        #rviz,
-        #state_publisher,
-        spawn,
-        diff_drive_spawner,
-        joint_broad_spawner
+        launch,
     ])
 
 
