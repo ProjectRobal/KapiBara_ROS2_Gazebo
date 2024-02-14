@@ -7,9 +7,11 @@ ENV DEBIAN_FRONTEND noninteractive
 
 COPY ./dependencies /app/dep
 
-RUN apt update -y
+RUN --mount=type=cache,target=/var/cache/apt apt update -y
 
-RUN xargs apt -y install < /app/dep/packages.txt
+RUN --mount=type=cache,target=/var/cache/apt xargs apt -y install < /app/dep/packages.txt
+
+RUN --mount=type=cache,target=/root/.cache/pip xargs pip3 install < /app/dep/python.txt
 
 RUN mkdir -p /app/src
 

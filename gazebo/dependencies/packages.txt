@@ -1,6 +1,7 @@
 python3-pip
 python3-rosdep
 ros-iron-turtlesim
+ros-iron-rmw-cyclonedds-cpp
 ros-iron-teleop-twist-keyboard
 ros-iron-rviz2
 ros-iron-joint-state-publisher-gui

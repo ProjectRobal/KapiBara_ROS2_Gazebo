@@ -33,6 +33,10 @@ elif [ "$arg" = "run" ]; then
 
 docker compose -f compose.yml run gazebo /app/cmd/run_cmd.sh "${@:2}"
 
+elif [ "$arg" = "bash" ]; then
+
+docker compose -f compose.yml run gazebo bash
+
 elif [ "$arg" = "debug" ]; then
 
 docker compose -f compose.yml exec gazebo bash

@@ -9,7 +9,8 @@ networks:
 
 services:
   gazebo:
-    container_name: kapibara_gazebo
+    container_name: kapibara_gazeboo
+    network_mode: host
     build:
       dockerfile: ./Dockerfile
       context: ./gazebo
@@ -21,9 +22,6 @@ services:
       - ./gazebo/src:/app/src:rw
       - /dev/shm:/dev/shm
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
-    networks:
-      - internal
-      - external
 
     devices:
       - "/dev/kfd:/dev/kfd"
