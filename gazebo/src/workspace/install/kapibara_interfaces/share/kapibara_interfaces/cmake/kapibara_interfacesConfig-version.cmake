@@ -1,0 +1,1 @@
+/app/src/workspace/build/kapibara_interfaces/ament_cmake_core/kapibara_interfacesConfig-version.cmake

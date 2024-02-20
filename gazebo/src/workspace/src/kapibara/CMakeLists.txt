@@ -12,6 +12,8 @@ find_package(rclcpp REQUIRED)
 find_package(rclpy REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(kapibara_interfaces REQUIRED)
 
 # uncomment the following section in order to fill in
 # further dependencies manually.
@@ -19,8 +21,8 @@ find_package(sensor_msgs REQUIRED)
 
 include_directories(include)
 
-#add_executable(cpp_executable src/cpp_node.cpp)
-#ament_target_dependencies(cpp_executable rclcpp)
+add_executable(cpp_executable src/fusion.cpp)
+ament_target_dependencies(cpp_executable rclcpp sensor_msgs geometry_msgs std_msgs kapibara_interfaces)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -47,7 +49,9 @@ install(
 ament_python_install_package(${PROJECT_NAME})
 
 install(PROGRAMS
-  kapibara/scripts/fusion.py
+  scripts/sensor_broadcaster.py
+  scripts/imu_calib.py
+  scripts/sim_ear.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

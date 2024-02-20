@@ -19,7 +19,7 @@ def generate_launch_description():
 
     # Use xacro to process the file
     xacro_file = os.path.join(get_package_share_directory(pkg_name),file_subpath)
-    robot_description_raw = xacro.process_file(xacro_file).toxml()
+    robot_description_raw = xacro.process_file(xacro_file,mappings={'sim_mode' : 'true'}).toxml()
 
     gazebo_env = SetEnvironmentVariable("GAZEBO_MODEL_PATH", os.path.join(get_package_prefix("kapibara"), "share"))
 
@@ -61,6 +61,18 @@ def generate_launch_description():
         executable="spawner",
         arguments=["joint_broad",'--controller-manager-timeout','240'],
     )
+    
+    ears_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["ears_controller",'--controller-manager-timeout','240'],
+    )
+    
+    
+    sim_ears = Node(package='kapibara', executable='sim_ear.py',
+                    arguments=[],
+                    output='screen',
+                    parameters=[{'use_sim_time': True}])
 
 
 
@@ -69,10 +81,12 @@ def generate_launch_description():
         gazebo,
         node_robot_state_publisher,
         #rviz,
-        #state_publisher,
+        state_publisher,
         spawn,
+        sim_ears,
         diff_drive_spawner,
-        joint_broad_spawner
+        joint_broad_spawner,
+        ears_controller_spawner
     ])
 
 

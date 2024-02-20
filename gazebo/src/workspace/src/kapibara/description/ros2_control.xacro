@@ -4,7 +4,16 @@
     <xacro:unless value="$(arg sim_mode)">
         <ros2_control name="KapiBaraMotors" type="system">
             <hardware>
-                <plugin>kapibara/MotorDriver</plugin>
+                <plugin>tb6612_drive_simple/TB6612DriveSimple</plugin>
+                <param name="left_wheel_name">wheel_left1_joint</param>
+                <param name="right_wheel_name">wheel_right3_joint</param>
+                <param name="max_speed">10</param>
+                <param name="loop_rate">30</param>
+                <param name="left_gpioA">406</param>
+                <param name="left_gpioB">407</param>
+                <param name="right_gpioA">404</param>
+                <param name="right_gpioB">405</param>
+                
             </hardware>
             <joint name="wheel_left1_joint">
                 <command_interface name="velocity">
@@ -42,6 +51,24 @@
 
             <joint name="wheel_right3_joint">
                 <command_interface name="velocity">
+                    <param name="min">-10</param>
+                    <param name="max">10</param>
+                </command_interface>
+                <state_interface name="velocity" />
+                <state_interface name="position" />
+            </joint>
+
+            <joint name="right_ear_joint">
+                <command_interface name="position">
+                    <param name="min">-10</param>
+                    <param name="max">10</param>
+                </command_interface>
+                <state_interface name="velocity" />
+                <state_interface name="position" />
+            </joint>
+
+            <joint name="left_ear_joint">
+                <command_interface name="position">
                     <param name="min">-10</param>
                     <param name="max">10</param>
                 </command_interface>

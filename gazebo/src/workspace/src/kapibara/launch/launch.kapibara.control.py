@@ -32,31 +32,24 @@ def generate_launch_description():
         'use_sim_time': False}] # add other parameters here if required
     )
 
-    robot_description = Command(['ros2 param get --hide-type /robot_state_publisher robot_description'])
-
 
     controller_params_file = os.path.join(get_package_share_directory(pkg_name),'config','my_controllers.yaml')
-
-
-    state_publisher = Node(package='joint_state_publisher_gui', executable='joint_state_publisher_gui',
-                    arguments=[],
-                    output='screen')
 
     controller_manager = Node(
         package="controller_manager",
         executable="ros2_control_node",
-        parameters=[{"roboto_description": robot_description},
+        parameters=[{"robot_description": robot_description_raw},
                     controller_params_file]
     )
 
-    delayed_controller_manager = TimerAction(period=3.0,actions=[
+    delayed_controller_manager = TimerAction(period=10.0,actions=[
         controller_manager
     ])
     
     diff_drive_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["diff_cont"],
+        arguments=["motors"],
     )
 
     delayed_diff_drive_spawner= RegisterEventHandler(
@@ -78,15 +71,31 @@ def generate_launch_description():
             on_start=[joint_broad_spawner]
         )
     )
-
-  
+    
+    
+    sensor_broadcaster = Node(
+        package="kapibara",
+        executable="sensor_broadcaster.py",
+        arguments=[]
+    )
+    
+    camera = Node(
+            package='v4l2_camera',
+            executable='v4l2_camera_node',
+            output='screen',
+            parameters=[{
+                'image_size': [640,480],
+                'camera_frame_id': 'camera_link_optical'
+                }]
+    )
 
     # Run the node
     return LaunchDescription([
         node_robot_state_publisher,
         delayed_controller_manager,
         delayed_diff_drive_spawner,
-        delayed_joint_broad_spawner
+        delayed_joint_broad_spawner,
+        sensor_broadcaster
     ])
 
 
