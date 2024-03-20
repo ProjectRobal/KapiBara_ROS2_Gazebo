@@ -263,8 +263,8 @@
     <joint name="left_ear_joint" type="revolute">
         <parent link="base" />
         <child link="left_ear" />
-        <axis xyz="0 1 0"/>
-        <origin rpy="0 ${-pi/2} 0" xyz="-0.09 0.075 0.09" />
+        <axis xyz="0 -1 0"/>
+        <origin rpy="0 ${pi/2} 0" xyz="-0.09 0.075 0.09" />
         <limit effort="1" velocity="1" upper="${pi}" lower="0" />
     </joint>
 
@@ -291,8 +291,8 @@
      <joint name="right_ear_joint" type="revolute">
         <parent link="base" />
         <child link="righ_ear" />
-        <axis xyz="0 1 0"/>
-        <origin rpy="0 ${-pi/2} 0" xyz="-0.09 -0.070 0.09" />
+        <axis xyz="0 -1 0"/>
+        <origin rpy="0 ${pi/2} 0" xyz="-0.09 -0.070 0.09" />
         <limit effort="1" velocity="1" upper="${pi}" lower="0" />
     </joint>
 
