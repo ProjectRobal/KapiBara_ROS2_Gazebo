@@ -4,6 +4,7 @@ from ament_index_python.packages import get_package_share_directory,get_package_
 from launch import LaunchDescription
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch_xml.launch_description_sources import XMLLaunchDescriptionSource
 
 from launch_ros.actions import Node
 import xacro
@@ -68,22 +69,25 @@ def generate_launch_description():
         arguments=["ears_controller",'--controller-manager-timeout','240'],
     )
     
-    
-    sim_ears = Node(package='kapibara', executable='sim_ear.py',
-                    arguments=[],
-                    output='screen',
-                    parameters=[{'use_sim_time': True}])
-
-
+    fusion = Node(
+        package="imu_filter_madgwick",
+        executable="imu_filter_madgwick_node",
+        parameters=[
+            {"use_mag":False}
+        ],
+        remappings=[
+            ('/imu/data_raw','/Gazebo/imu')
+        ]
+    )
 
     # Run the node
     return LaunchDescription([
         gazebo,
         node_robot_state_publisher,
         #rviz,
-        state_publisher,
+        #state_publisher,
         spawn,
-        sim_ears,
+        fusion,
         diff_drive_spawner,
         joint_broad_spawner,
         ears_controller_spawner
