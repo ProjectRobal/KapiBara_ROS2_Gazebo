@@ -3,7 +3,7 @@
 import rclpy
 from rclpy.node import Node
 
-from std_msgs.msg import String
+from std_msgs.msg import String,Float64MultiArray
 
 from sensor_msgs.msg import Range,Imu
 from geometry_msgs.msg import Quaternion
@@ -34,6 +34,10 @@ class EmotionEstimator(Node):
         self.declare_parameter('accel_threshold', 10.0)
         self.declare_parameter('angular_threshold', 1.0)
         
+        # a topic to send ears position
+        
+        self.declare_parameter('ears_topic','/ears_controller/commands')
+        
         # a list of topics of tof sensors
         self.declare_parameter('tofs', ['/laser_front'])
         
@@ -46,7 +50,12 @@ class EmotionEstimator(Node):
         # a topic to listen for odometry 
         self.declare_parameter('odom','/motors/odom')
         
-        self.service = self.create_service(Emotions,'emotions',self.emotions_callback)        
+        self.service = self.create_service(Emotions,'emotions',self.emotions_callback)    
+        
+        # anguler values for each emotions state
+        self.emotions_angle=[180.0,0.0,135.0,45.0,90.0]    
+        
+        self.ears_publisher=self.create_publisher(Float64MultiArray, self.get_parameter('ears_topic').get_parameter_value().string_value, 10)
         
         
         self.accel_threshold = self.get_parameter('accel_threshold').get_parameter_value().double_value
@@ -96,16 +105,40 @@ class EmotionEstimator(Node):
         odom_topic = self.get_parameter('odom').get_parameter_value().string_value
         self.get_logger().info("Creating subscription for odometry sensor at topic: "+odom_topic)
         self.odom_subscripe = self.create_subscription(Odometry,odom_topic,self.odom_callback,10)
+        
+        self.ears_timer = self.create_timer(1.0, self.ears_subscriber_timer)
     
     # subscribe ears position based on current emotion 
     def ears_subscriber_timer(self):
-        pass 
+        emotions = self.calculate_emotion_status()
+        
+        if np.sum(emotions) < 0.01:
+            max_id=4
+        else:
+            max_id:int = np.argmax(emotions)
+            
+        self.get_logger().debug("Sending angle to ears: "+str(self.emotions_angle[max_id]))
+        
+        angle:float = (self.emotions_angle[max_id]/180.0)*np.pi
+        
+        array=Float64MultiArray()
+        
+        array.data=[angle,angle]
+        
+        self.ears_publisher.publish(array)
     
-    def calculate_emotion_status(self):
+    def calculate_emotion_status(self) -> np.ndarray:
         emotions=np.zeros(5)
         
+        emotions[0] = 0.0
+        emotions[1] = ( 1.0 - min( ( min( self.current_ranges )/self.range_threshold ),1.0) ) + ( self.last_angular_fear > 0.1 )*self.last_angular_fear
+        emotions[2] =0.0
+        emotions[3] = (self.last_uncertanity > 0.1)*self.last_uncertanity
+        emotions[4] = np.floor(self.procratination_counter/20.0)
         
-    
+        return emotions
+        
+           
     def procratination_timer_callback(self):
         if self.procratination_counter < 10000:
             self.procratination_counter = self.procratination_counter + 1
@@ -157,11 +190,13 @@ class EmotionEstimator(Node):
         
         self.get_logger().debug("Current ranges kept by program: "+str(self.current_ranges))
         
-        response.angry=0.0
-        response.fear=( 1.0 - min( ( min( self.current_ranges )/self.range_threshold ),1.0) ) + ( self.last_angular_fear > 0.1 )*self.last_angular_fear
-        response.happiness=0.0
-        response.uncertainty= (self.last_uncertanity > 0.1)*self.last_uncertanity
-        response.boredom=np.floor(self.procratination_counter/20.0)
+        emotions = self.calculate_emotion_status()
+        
+        response.angry=emotions[0]
+        response.fear=emotions[1]
+        response.happiness=emotions[2]
+        response.uncertainty=emotions[3]
+        response.boredom=emotions[4]
                 
         return response
 
