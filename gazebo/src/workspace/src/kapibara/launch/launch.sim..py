@@ -35,7 +35,8 @@ def generate_launch_description():
 
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
-            get_package_share_directory('gazebo_ros'), 'launch', 'gazebo.launch.py')]),
+            get_package_share_directory('gazebo_ros'), 'launch', 'gazebo.launch.py',)]),
+            launch_arguments={'world': '/app/src/rviz/playground.sdf'}.items()
         )
     
     state_publisher = Node(package='joint_state_publisher_gui', executable='joint_state_publisher_gui',
@@ -48,7 +49,7 @@ def generate_launch_description():
                     output='screen')
     
     spawn = Node(package='gazebo_ros', executable='spawn_entity.py',
-                    arguments=["-topic","/robot_description","-entity","kapibara","-timeout","240"],
+                    arguments=["-topic","/robot_description","-entity","kapibara","-timeout","240","-z","1"],
                     output='screen')
     
     diff_drive_spawner = Node(
