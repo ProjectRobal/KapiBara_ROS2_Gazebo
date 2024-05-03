@@ -78,16 +78,6 @@ def generate_launch_description():
         executable="sensor_broadcaster.py",
         arguments=[]
     )
-    
-    camera = Node(
-            package='v4l2_camera',
-            executable='v4l2_camera_node',
-            output='screen',
-            parameters=[{
-                'image_size': [640,480],
-                'camera_frame_id': 'camera_link_optical'
-                }]
-    )
 
     # Run the node
     return LaunchDescription([

@@ -1,0 +1,1 @@
+/app/src/workspace/build/kapibara_interfaces/rosidl_cmake/srv/Emotions_Request.msg

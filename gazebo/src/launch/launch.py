@@ -21,11 +21,15 @@ def generate_launch_description():
             get_package_share_directory(pkg_name),'launch','launch.sim..py')
         ]
     ))
+    
+    rqt=Node(package='rqt_image_view', executable='rqt_image_view',
+                    arguments=[],
+                    output='screen')
+
 
     # Run the node
     return LaunchDescription([
-        #kapibara_test_node
-        launch,
+        launch
     ])
 
 

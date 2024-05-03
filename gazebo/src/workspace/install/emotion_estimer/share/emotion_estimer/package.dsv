@@ -1,0 +1,11 @@
+source;share/emotion_estimer/hook/cmake_prefix_path.ps1
+source;share/emotion_estimer/hook/cmake_prefix_path.dsv
+source;share/emotion_estimer/hook/cmake_prefix_path.sh
+source;share/emotion_estimer/hook/pythonpath.ps1
+source;share/emotion_estimer/hook/pythonpath.dsv
+source;share/emotion_estimer/hook/pythonpath.sh
+source;share/emotion_estimer/local_setup.bash
+source;share/emotion_estimer/local_setup.dsv
+source;share/emotion_estimer/local_setup.ps1
+source;share/emotion_estimer/local_setup.sh
+source;share/emotion_estimer/local_setup.zsh

@@ -18,6 +18,11 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/DiffEncoder.msg"
   "msg/Microphone.msg"
   "msg/Servo.msg"
+  "msg/Face.msg"
+  "msg/RectI.msg"
+  "msg/Vector2DI.msg"
+  "msg/Emotions.msg"
+  "srv/Emotions.srv"
 )
 
 if(BUILD_TESTING)

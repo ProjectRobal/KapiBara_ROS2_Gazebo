@@ -1,0 +1,1 @@
+/app/src/workspace/build/kapibara_interfaces/rosidl_generator_cpp/kapibara_interfaces/msg/detail/rect_i__traits.hpp

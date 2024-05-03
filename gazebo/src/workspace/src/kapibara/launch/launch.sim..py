@@ -76,10 +76,22 @@ def generate_launch_description():
             {"use_mag":False}
         ],
         remappings=[
-            ('/imu/data_raw','/Gazebo/imu')
+            ('/imu/data_raw','/Gazebo/imu'),
+            ('/imu/data','/Gazebo/orientation')
         ]
     )
 
+    emotions = Node(
+        package="emotion_estimer",
+        executable="estimator.py",
+        parameters=[{
+            "tofs":["/Gazebo/front_left",
+                    "/Gazebo/front_right",
+                    "/Gazebo/side_left",
+                    "/Gazebo/side_right"
+                    ]
+        }]
+    )
     # Run the node
     return LaunchDescription([
         gazebo,
@@ -88,6 +100,7 @@ def generate_launch_description():
         #state_publisher,
         spawn,
         fusion,
+        emotions,
         diff_drive_spawner,
         joint_broad_spawner,
         ears_controller_spawner
