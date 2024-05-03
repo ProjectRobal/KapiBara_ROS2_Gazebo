@@ -11,7 +11,10 @@ from geometry_msgs.msg import Quaternion
 from kapibara_interfaces.srv import Emotions
 from kapibara_interfaces.msg import Microphone
 
+from nav_msgs.msg import Odometry
+
 from copy import copy
+import numpy as np
 
 '''
 
@@ -28,6 +31,8 @@ class EmotionEstimator(Node):
         self.current_ranges=[]
         
         self.declare_parameter('range_threshold', 0.1)
+        self.declare_parameter('accel_threshold', 10.0)
+        self.declare_parameter('angular_threshold', 1.0)
         
         # a list of topics of tof sensors
         self.declare_parameter('tofs', ['/laser_front'])
@@ -35,10 +40,27 @@ class EmotionEstimator(Node):
         # a orientation callback
         self.declare_parameter('imu', '/Gazebo/orientation')
         
+        # a topic to listen for audio from microphone
         self.declare_parameter('mic', '')
+        
+        # a topic to listen for odometry 
+        self.declare_parameter('odom','/motors/odom')
         
         self.service = self.create_service(Emotions,'emotions',self.emotions_callback)        
         
+        
+        self.accel_threshold = self.get_parameter('accel_threshold').get_parameter_value().double_value
+        self.last_accel = 0.0
+        self.thrust = 0.0
+        self.last_uncertanity = 0.0
+        
+        self.angular_threshold = self.get_parameter('angular_threshold').get_parameter_value().double_value
+        self.last_angular = 0.0
+        self.angular_jerk = 0.0
+        self.last_angular_fear = 0.0
+        
+        self.procratination_counter = 0
+        self.procratination_timer = self.create_timer(0.5, self.procratination_timer_callback)
         
         # parameter that describe fear distance threshold for laser sensor
         
@@ -66,10 +88,36 @@ class EmotionEstimator(Node):
         mic_topic = self.get_parameter('mic').get_parameter_value().string_value
         
         if len(mic_topic)>0:
-            self.get_logger().info("Creating subscription for IMU sensor at topic: "+imu_topic)
+            self.get_logger().info("Creating subscription for IMU sensor at topic: "+mic_topic)
             self.mic_subscripe = self.create_subscription(Microphone,mic_topic,self.mic_callback,10)
         
-        # IMU, use acclerometer 
+        # Subcription for odometry
+        
+        odom_topic = self.get_parameter('odom').get_parameter_value().string_value
+        self.get_logger().info("Creating subscription for odometry sensor at topic: "+odom_topic)
+        self.odom_subscripe = self.create_subscription(Odometry,odom_topic,self.odom_callback,10)
+    
+    # subscribe ears position based on current emotion 
+    def ears_subscriber_timer(self):
+        pass 
+    
+    def calculate_emotion_status(self):
+        emotions=np.zeros(5)
+        
+        
+    
+    def procratination_timer_callback(self):
+        if self.procratination_counter < 10000:
+            self.procratination_counter = self.procratination_counter + 1
+    
+    def odom_callback(self,odom:Odometry):
+        
+        velocity = odom.twist.twist.linear.x*odom.twist.twist.linear.x + odom.twist.twist.linear.y*odom.twist.twist.linear.y + odom.twist.twist.linear.z*odom.twist.twist.linear.z
+        angular = odom.twist.twist.angular.x*odom.twist.twist.angular.x + odom.twist.twist.angular.y*odom.twist.twist.angular.y + odom.twist.twist.angular.z*odom.twist.twist.angular.z
+        
+        self.get_logger().debug("Odom recive velocity of "+str(velocity)+" and angular velocity of "+str(angular))
+        if velocity > 0.0001 or angular > 0.01:
+            self.procratination_counter = 0
         
     
     def laser_callback(self,laser:Range,id):
@@ -77,9 +125,32 @@ class EmotionEstimator(Node):
         self.current_ranges[id]=laser.range
         
     def imu_callback(self,imu:Imu):
-        pass
+        accel=imu.linear_acceleration
+        
+        accel_value = np.sqrt(accel.x*accel.x + accel.y*accel.y + accel.z*accel.z)/3  
+        
+        self.thrust = abs(accel_value-self.last_accel)
+        
+        self.last_accel = accel_value
+        
+        self.last_uncertanity = (self.thrust/self.accel_threshold) + 0.5*self.last_uncertanity
+                
+        self.get_logger().debug("Thrust uncertanity value "+str(self.last_uncertanity))
+        
+        angular = imu.angular_velocity
+        
+        angular_value = np.sqrt(angular.x*angular.x + angular.y*angular.y + angular.z*angular.z)/3
+        
+        self.angular_jerk = abs(angular_value-self.last_angular)
+        
+        self.last_angular = angular_value
+        
+        self.last_angular_fear = (self.angular_jerk/self.angular_threshold) + 0.4*self.last_angular_fear
+        
+        self.get_logger().debug("Jerk value fear "+str(self.last_angular_fear))
     
     def mic_callback(self,mic:Microphone):
+        # I have to think about it
         pass
     
     def emotions_callback(self, request, response):
@@ -87,11 +158,11 @@ class EmotionEstimator(Node):
         self.get_logger().debug("Current ranges kept by program: "+str(self.current_ranges))
         
         response.angry=0.0
-        response.fear=( 1.0 - min( ( min( self.current_ranges )/self.range_threshold ),1.0) )*5.0
+        response.fear=( 1.0 - min( ( min( self.current_ranges )/self.range_threshold ),1.0) ) + ( self.last_angular_fear > 0.1 )*self.last_angular_fear
         response.happiness=0.0
-        response.uncertainty=0.0
-        response.boredom=0.0
-        
+        response.uncertainty= (self.last_uncertanity > 0.1)*self.last_uncertanity
+        response.boredom=np.floor(self.procratination_counter/20.0)
+                
         return response
 
 

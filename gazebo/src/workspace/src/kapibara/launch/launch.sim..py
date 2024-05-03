@@ -89,7 +89,8 @@ def generate_launch_description():
                     "/Gazebo/front_right",
                     "/Gazebo/side_left",
                     "/Gazebo/side_right"
-                    ]
+                    ],
+            "imu":'/Gazebo/orientation'
         }]
     )
     # Run the node
