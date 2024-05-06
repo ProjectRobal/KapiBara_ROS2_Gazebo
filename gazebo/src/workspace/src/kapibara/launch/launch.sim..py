@@ -94,6 +94,12 @@ def generate_launch_description():
             "imu":'/Gazebo/orientation'
         }]
     )
+    
+    audio_in = Node(
+        package="kapibara",
+        executable="mic_emulator.py",
+        parameters=[{}]
+    )
     # Run the node
     return LaunchDescription([
         gazebo,
@@ -103,6 +109,7 @@ def generate_launch_description():
         spawn,
         fusion,
         emotions,
+        audio_in,
         diff_drive_spawner,
         joint_broad_spawner,
         ears_controller_spawner

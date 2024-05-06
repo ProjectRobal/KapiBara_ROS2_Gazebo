@@ -51,7 +51,7 @@ ament_python_install_package(${PROJECT_NAME})
 install(PROGRAMS
   scripts/sensor_broadcaster.py
   scripts/imu_calib.py
-  #scripts/sim_ear.py
+  scripts/mic_emulator.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

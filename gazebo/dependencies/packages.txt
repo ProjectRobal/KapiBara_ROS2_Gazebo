@@ -1,5 +1,6 @@
 python3-pip
 python3-rosdep
+python3-pyaudio
 ros-iron-xacro
 ros-iron-turtlesim
 ros-iron-rmw-cyclonedds-cpp

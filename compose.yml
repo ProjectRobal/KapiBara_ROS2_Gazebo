@@ -26,6 +26,7 @@ services:
     devices:
       - "/dev/kfd:/dev/kfd"
       - "/dev/dri/:/dev/dri/"
+      - /dev/snd:/dev/snd
 
     group_add:
       - video
