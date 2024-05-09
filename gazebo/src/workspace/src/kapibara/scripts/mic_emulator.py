@@ -8,7 +8,7 @@ from rclpy.node import Node
 
 from kapibara_interfaces.msg import Microphone as Mic
 
-CHUNK_SIZE=512
+CHUNK_SIZE=1024
 
 class Microphone:
     def __init__(self,chunk=CHUNK_SIZE,format=pyaudio.paInt32,channels=1,rate=44100,id=0,callback=None):

@@ -3,7 +3,7 @@
 import rclpy
 from rclpy.node import Node
 
-from std_msgs.msg import String,Float64MultiArray
+from std_msgs.msg import Float64MultiArray
 
 from sensor_msgs.msg import Range,Imu
 from geometry_msgs.msg import Quaternion

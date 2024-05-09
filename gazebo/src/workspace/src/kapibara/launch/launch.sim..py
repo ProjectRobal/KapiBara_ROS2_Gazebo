@@ -100,6 +100,21 @@ def generate_launch_description():
         executable="mic_emulator.py",
         parameters=[{}]
     )
+    
+    mind = Node(
+        package="kapibara_mind",
+        executable="mind",
+        parameters=[{
+            "tof_topics":["/Gazebo/front_left",
+                    "/Gazebo/front_right",
+                    "/Gazebo/side_left",
+                    "/Gazebo/side_right"
+                    ],
+            "imu_topic":'/Gazebo/orientation',
+            "max_linear_speed":1.0,
+            "max_angular_speed":2.0
+        }]
+    )
     # Run the node
     return LaunchDescription([
         gazebo,
@@ -112,7 +127,8 @@ def generate_launch_description():
         audio_in,
         diff_drive_spawner,
         joint_broad_spawner,
-        ears_controller_spawner
+        ears_controller_spawner,
+        mind
     ])
 
 

@@ -1,0 +1,1 @@
+/app/src/workspace/build/kapibara_mind/ament_cmake_core/kapibara_mindConfig-version.cmake
