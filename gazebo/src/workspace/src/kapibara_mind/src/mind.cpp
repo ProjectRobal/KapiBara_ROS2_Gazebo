@@ -238,6 +238,7 @@ class KapiBaraMind : public rclcpp::Node
 
     void odometry_callback(const nav_msgs::msg::Odometry::SharedPtr odometry)
     {
+        // I have to think about it:
         inputs.set(odometry->pose.pose.position.x/1000.f,5);
         inputs.set(odometry->pose.pose.position.y/1000.f,6);
         inputs.set(odometry->pose.pose.position.z/1000.f,7);
@@ -247,12 +248,25 @@ class KapiBaraMind : public rclcpp::Node
 
     }
 
+    number frame_activ(const number& num)
+    {
+        if((num>0.5f)&&(num<10.f))
+        {
+            return (num-0.5f)/(10.f-0.5f) - 0.5f;
+        }
+        
+        return 0;
+    }
+
     void orientation_callback(const sensor_msgs::msg::Imu::SharedPtr orientation)
     {
-        inputs.set(orientation->orientation.x,8);
-        inputs.set(orientation->orientation.y,9);
-        inputs.set(orientation->orientation.z,10);
-        inputs.set(orientation->orientation.w,11);
+        if((!std::isnan(orientation->orientation.x))&&(!std::isnan(orientation->orientation.y))&&(!std::isnan(orientation->orientation.z))&&(!std::isnan(orientation->orientation.w)))
+        {
+            inputs.set(orientation->orientation.x,8);
+            inputs.set(orientation->orientation.y,9);
+            inputs.set(orientation->orientation.z,10);
+            inputs.set(orientation->orientation.w,11);
+        }
         // this gives NaN values
         RCLCPP_DEBUG(this->get_logger(), "Getting orientation");
         //RCLCPP_INFO(this->get_logger(),"x: %f y: %f z: %f w: %f",orientation->orientation.x,orientation->orientation.y,orientation->orientation.z,orientation->orientation.w);
@@ -268,14 +282,17 @@ class KapiBaraMind : public rclcpp::Node
 
         geometry_msgs::msg::Twist twist = geometry_msgs::msg::Twist();
 
-        if(output[0]>0)
+        output.set(frame_activ(output[0])*this->max_linear_speed,0);
+        output.set(frame_activ(output[1])*this->max_angular_speed,1);
+
+        /*if(output[0]>0)
         {
-            output[0]-=this->max_linear_speed;
+            output.set(output[0]-this->max_linear_speed,0);
         }
 
         if(output[1]>0)
         {
-            output[1]-=this->max_angular_speed;
+            output.set(output[1]-this->max_angular_speed,1);
         }
 
         if(abs(output[0])>this->max_linear_speed)
@@ -286,7 +303,7 @@ class KapiBaraMind : public rclcpp::Node
         if(abs(output[1])>this->max_angular_speed)
         {
             output.set(this->max_angular_speed*(output[1]/abs(output[1])),1);
-        }
+        }*/
 
         twist.linear.x=output[0];
         twist.angular.z=output[1];

@@ -134,7 +134,7 @@ class EmotionEstimator(Node):
         emotions[1] = ( 1.0 - min( ( min( self.current_ranges )/self.range_threshold ),1.0) ) + ( self.last_angular_fear > 0.1 )*self.last_angular_fear
         emotions[2] =0.0
         emotions[3] = (self.last_uncertanity > 0.1)*self.last_uncertanity
-        emotions[4] = np.floor(self.procratination_counter/20.0)
+        emotions[4] = np.floor(self.procratination_counter/5.0)
         
         return emotions
         
