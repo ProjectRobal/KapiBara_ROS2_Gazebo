@@ -33,6 +33,7 @@ extern "C"
 #include "crossovers/fastonepoint.hpp"
  
 #include "initializers/gauss.hpp"
+#include "initializers/hu.hpp"
 #include "initializers/normalized_gauss.hpp"
 
 #include "mutatiom/gauss_mutation.hpp"
@@ -104,6 +105,8 @@ class KapiBaraMind : public rclcpp::Node
   {
     std::shared_ptr<snn::NormalizedGaussInit> norm_gauss=std::make_shared<snn::NormalizedGaussInit>(0.f,0.01f);
     std::shared_ptr<snn::GaussInit> gauss=std::make_shared<snn::GaussInit>(0.f,0.25f);
+    std::shared_ptr<snn::HuInit> hau=std::make_shared<snn::HuInit>();
+
 
     // intitialize network here load pre saved models etc
     auto mutation=std::make_shared<snn::GaussMutation>(0.f,0.001f,0.1f);
@@ -113,11 +116,11 @@ class KapiBaraMind : public rclcpp::Node
     auto sigmoid=std::make_shared<snn::Sigmoid>();
     auto slipy=std::make_shared<snn::SlipyReLu>();
 
-    std::shared_ptr<snn::Layer<snn::ForwardNeuron<526>,64>> first = std::make_shared<snn::Layer<snn::ForwardNeuron<526>,64>>(128,gauss,cross,mutation);
-    std::shared_ptr<snn::Layer<snn::ForwardNeuron<128>,64>> layer1 = std::make_shared<snn::Layer<snn::ForwardNeuron<128>,64>>(512,gauss,cross,mutation);
-    std::shared_ptr<snn::Layer<snn::ForwardNeuron<512>,64>> layer2 = std::make_shared<snn::Layer<snn::ForwardNeuron<512>,64>>(128,gauss,cross,mutation);
-    std::shared_ptr<snn::Layer<snn::ForwardNeuron<128>,64>> layer3 = std::make_shared<snn::Layer<snn::ForwardNeuron<128>,64>>(64,gauss,cross,mutation);
-    std::shared_ptr<snn::Layer<snn::ForwardNeuron<64>,64>> layer4 = std::make_shared<snn::Layer<snn::ForwardNeuron<64>,64>>(2,gauss,cross,mutation);
+    std::shared_ptr<snn::Layer<snn::ForwardNeuron<526>,64>> first = std::make_shared<snn::Layer<snn::ForwardNeuron<526>,64>>(128,hau,cross,mutation);
+    std::shared_ptr<snn::Layer<snn::ForwardNeuron<128>,64>> layer1 = std::make_shared<snn::Layer<snn::ForwardNeuron<128>,64>>(512,hau,cross,mutation);
+    std::shared_ptr<snn::Layer<snn::ForwardNeuron<512>,64>> layer2 = std::make_shared<snn::Layer<snn::ForwardNeuron<512>,64>>(128,hau,cross,mutation);
+    std::shared_ptr<snn::Layer<snn::ForwardNeuron<128>,64>> layer3 = std::make_shared<snn::Layer<snn::ForwardNeuron<128>,64>>(64,hau,cross,mutation);
+    std::shared_ptr<snn::Layer<snn::ForwardNeuron<64>,64>> layer4 = std::make_shared<snn::Layer<snn::ForwardNeuron<64>,64>>(2,hau,cross,mutation);
 
     first->setActivationFunction(slipy);
     layer1->setActivationFunction(slipy);
