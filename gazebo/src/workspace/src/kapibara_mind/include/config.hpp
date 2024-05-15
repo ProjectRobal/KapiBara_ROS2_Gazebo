@@ -21,3 +21,7 @@ typedef std::experimental::fixed_size_simd_mask<number , MAX_SIMD_VECTOR_SIZE> S
 #define MAX_THREAD_POOL 8
 
 #define SWARMING_SPEED_DEFAULT 10.f
+
+#define MAX_PAST_NEURONS 6
+
+#define DUMPING_FACTOR 0.8f

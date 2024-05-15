@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <vector>
+#include <deque>
 #include <array>
 #include <memory>
 #include <random>
@@ -43,6 +44,8 @@ namespace snn
         std::array<std::shared_ptr<Neuron>,Populus> population;
         std::shared_ptr<Neuron> worker;
 
+        std::deque<std::shared_ptr<Neuron>> past_neurons;
+
         std::shared_ptr<Neuron> best_worker;
 
         number swarming_speed;
@@ -60,7 +63,7 @@ namespace snn
         mating_counter(0),
         swarming_speed(SWARMING_SPEED_DEFAULT)
         {
-
+            
         }
 
         void setup(std::shared_ptr<Initializer> init)
@@ -131,6 +134,16 @@ namespace snn
             }
         }
 
+        void recordWorker(std::shared_ptr<Neuron> worker)
+        {
+            if(this->past_neurons.size()>=MAX_PAST_NEURONS)
+            {
+                this->past_neurons.pop_back();
+            }
+            
+            this->past_neurons.push_front(worker);
+        }
+
         void chooseWorkers()
         {
             std::random_device rd; 
@@ -146,6 +159,11 @@ namespace snn
                 id=(id+1+this->uniform(gen))%(Populus-1);
             }
 
+            if(this->worker!=NULL)
+            {
+                this->recordWorker(this->worker);
+            }
+
             this->worker=this->population[id];
 
         }
@@ -154,6 +172,15 @@ namespace snn
         void giveReward(long double reward)
         {          
             this->worker->giveReward(reward);
+
+            long double past_reward=reward*DUMPING_FACTOR;
+
+            for(auto neuron : this->past_neurons)
+            {
+                neuron->giveReward(past_reward);
+
+                past_reward*=DUMPING_FACTOR;
+            }
             
             if(this->worker->used()<USESES_TO_MAITING)
             {

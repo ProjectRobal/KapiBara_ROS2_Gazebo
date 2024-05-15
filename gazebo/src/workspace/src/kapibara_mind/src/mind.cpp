@@ -105,7 +105,7 @@ class KapiBaraMind : public rclcpp::Node
     std::shared_ptr<snn::GaussInit> gauss=std::make_shared<snn::GaussInit>(0.f,0.25f);
 
     // intitialize network here load pre saved models etc
-    auto mutation=std::make_shared<snn::GaussMutation>(0.f,0.01f,0.1f);
+    auto mutation=std::make_shared<snn::GaussMutation>(0.f,0.001f,0.1f);
     auto cross=std::make_shared<snn::OnePoint>();
 
     auto relu=std::make_shared<snn::ReLu>();
@@ -121,7 +121,7 @@ class KapiBaraMind : public rclcpp::Node
     layer1->setActivationFunction(relu);
     layer2->setActivationFunction(relu);
     layer3->setActivationFunction(relu);
-    //layer4->setActivationFunction(sigmoid);
+    layer4->setActivationFunction(relu);
 
     this->network.addLayer(first);
     this->network.addLayer(layer1);
@@ -198,10 +198,6 @@ class KapiBaraMind : public rclcpp::Node
         this->create_network();
     }
 
-    void callback(const rclcpp::Client<kapibara_interfaces::srv::Emotions>::SharedFuture future)
-    {
-
-    }
 
     double get_reward()
     {
@@ -247,7 +243,7 @@ class KapiBaraMind : public rclcpp::Node
         inputs.set(odometry->pose.pose.position.z/1000.f,7);
 
         RCLCPP_DEBUG(this->get_logger(), "Getting odometry");
-        //RCLCPP_INFO(this->get_logger(),"x: %f y: %f z: %f",odometry->pose.pose.position.x/1000.f,odometry->pose.pose.position.y/1000.f,odometry->pose.pose.position.z/1000.f);
+        //RCLCPP_INFO(this->get_logger(),"x: %f y: %f z: %f",odometry->pose.pose.position.x,odometry->pose.pose.position.y,odometry->pose.pose.position.z);
 
     }
 
@@ -257,8 +253,10 @@ class KapiBaraMind : public rclcpp::Node
         inputs.set(orientation->orientation.y,9);
         inputs.set(orientation->orientation.z,10);
         inputs.set(orientation->orientation.w,11);
-
+        // this gives NaN values
         RCLCPP_DEBUG(this->get_logger(), "Getting orientation");
+        //RCLCPP_INFO(this->get_logger(),"x: %f y: %f z: %f w: %f",orientation->orientation.x,orientation->orientation.y,orientation->orientation.z,orientation->orientation.w);
+
 
         const double reward = this->get_reward();
 
@@ -269,6 +267,16 @@ class KapiBaraMind : public rclcpp::Node
         snn::SIMDVector output = (this->network.fire(this->inputs)-0.5f)*2.f;
 
         geometry_msgs::msg::Twist twist = geometry_msgs::msg::Twist();
+
+        if(output[0]>0)
+        {
+            output[0]-=this->max_linear_speed;
+        }
+
+        if(output[1]>0)
+        {
+            output[1]-=this->max_angular_speed;
+        }
 
         if(abs(output[0])>this->max_linear_speed)
         {
