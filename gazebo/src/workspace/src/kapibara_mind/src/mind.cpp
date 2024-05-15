@@ -39,6 +39,7 @@ extern "C"
 
 #include "activation/sigmoid.hpp"
 #include "activation/relu.hpp"
+#include "activation/relu_sliper.hpp"
 
 #include "neurons/forwardneuron.hpp"
 
@@ -110,6 +111,7 @@ class KapiBaraMind : public rclcpp::Node
 
     auto relu=std::make_shared<snn::ReLu>();
     auto sigmoid=std::make_shared<snn::Sigmoid>();
+    auto slipy=std::make_shared<snn::SlipyReLu>();
 
     std::shared_ptr<snn::Layer<snn::ForwardNeuron<526>,64>> first = std::make_shared<snn::Layer<snn::ForwardNeuron<526>,64>>(128,gauss,cross,mutation);
     std::shared_ptr<snn::Layer<snn::ForwardNeuron<128>,64>> layer1 = std::make_shared<snn::Layer<snn::ForwardNeuron<128>,64>>(512,gauss,cross,mutation);
@@ -117,10 +119,10 @@ class KapiBaraMind : public rclcpp::Node
     std::shared_ptr<snn::Layer<snn::ForwardNeuron<128>,64>> layer3 = std::make_shared<snn::Layer<snn::ForwardNeuron<128>,64>>(64,gauss,cross,mutation);
     std::shared_ptr<snn::Layer<snn::ForwardNeuron<64>,64>> layer4 = std::make_shared<snn::Layer<snn::ForwardNeuron<64>,64>>(2,gauss,cross,mutation);
 
-    first->setActivationFunction(relu);
-    layer1->setActivationFunction(relu);
-    layer2->setActivationFunction(relu);
-    layer3->setActivationFunction(relu);
+    first->setActivationFunction(slipy);
+    layer1->setActivationFunction(slipy);
+    layer2->setActivationFunction(slipy);
+    layer3->setActivationFunction(slipy);
     layer4->setActivationFunction(relu);
 
     this->network.addLayer(first);
@@ -250,9 +252,9 @@ class KapiBaraMind : public rclcpp::Node
 
     number frame_activ(const number& num)
     {
-        if((num>0.5f)&&(num<10.f))
+        if((num>0.25f)&&(num<4.f))
         {
-            return (num-0.5f)/(10.f-0.5f) - 0.5f;
+            return ((num-0.25f)/(4.f-0.25f) - 0.5f)*2.f;
         }
         
         return 0;
@@ -278,9 +280,11 @@ class KapiBaraMind : public rclcpp::Node
 
         this->network.applyReward(reward);
 
-        snn::SIMDVector output = (this->network.fire(this->inputs)-0.5f)*2.f;
+        snn::SIMDVector output = this->network.fire(this->inputs);
 
         geometry_msgs::msg::Twist twist = geometry_msgs::msg::Twist();
+
+        RCLCPP_INFO(this->get_logger(), "Output: 1: %Lf 2: %Lf",output[0],output[1]);
 
         output.set(frame_activ(output[0])*this->max_linear_speed,0);
         output.set(frame_activ(output[1])*this->max_angular_speed,1);

@@ -164,6 +164,7 @@ namespace snn
         this->vec.push_back(dume);
     }
 
+
     SIMDVector SIMDVector::operator+(const SIMDVector& v) const
     {
         SIMDVector sv;
