@@ -70,6 +70,11 @@ using std::placeholders::_1;
     linear speed ( 1 number )
     angular speed ( 1 number )
 
+    up ( 1 number ) probability of moving forward
+    down ( 1 number ) probability of moving backward
+    left ( 1 number ) probability of turning left
+    right ( 1 number ) probabilty of turining right
+
     in Twist message it will be linear(linear,0.f,0.f) and angular (0.f,0.f,angular)
     geometry_msgs/msg/Twist
  
@@ -93,6 +98,9 @@ class KapiBaraMind : public rclcpp::Node
   snn::SIMDVector inputs;
 
   snn::Network network;
+  snn::Network direction;
+
+  snn::Network encoder;
 
   double max_linear_speed;
   double max_angular_speed;
@@ -116,23 +124,46 @@ class KapiBaraMind : public rclcpp::Node
     auto sigmoid=std::make_shared<snn::Sigmoid>();
     auto slipy=std::make_shared<snn::SlipyReLu>();
 
-    std::shared_ptr<snn::Layer<snn::ForwardNeuron<526>,64>> first = std::make_shared<snn::Layer<snn::ForwardNeuron<526>,64>>(128,hau,cross,mutation);
-    std::shared_ptr<snn::Layer<snn::ForwardNeuron<128>,64>> layer1 = std::make_shared<snn::Layer<snn::ForwardNeuron<128>,64>>(512,hau,cross,mutation);
-    std::shared_ptr<snn::Layer<snn::ForwardNeuron<512>,64>> layer2 = std::make_shared<snn::Layer<snn::ForwardNeuron<512>,64>>(128,hau,cross,mutation);
-    std::shared_ptr<snn::Layer<snn::ForwardNeuron<128>,64>> layer3 = std::make_shared<snn::Layer<snn::ForwardNeuron<128>,64>>(64,hau,cross,mutation);
+    std::shared_ptr<snn::Layer<snn::ForwardNeuron<530>,64>> first = std::make_shared<snn::Layer<snn::ForwardNeuron<530>,64>>(128,hau,cross,mutation);
+
+    // main network layers
+    std::shared_ptr<snn::Layer<snn::ForwardNeuron<128>,64>> layer1 = std::make_shared<snn::Layer<snn::ForwardNeuron<128>,64>>(340,hau,cross,mutation);
+    std::shared_ptr<snn::Layer<snn::ForwardNeuron<340>,64>> layer2 = std::make_shared<snn::Layer<snn::ForwardNeuron<340>,64>>(64,hau,cross,mutation);
+    //std::shared_ptr<snn::Layer<snn::ForwardNeuron<128>,64>> layer3 = std::make_shared<snn::Layer<snn::ForwardNeuron<128>,64>>(64,hau,cross,mutation);
     std::shared_ptr<snn::Layer<snn::ForwardNeuron<64>,64>> layer4 = std::make_shared<snn::Layer<snn::ForwardNeuron<64>,64>>(2,hau,cross,mutation);
 
+    // direction layers 
+
+    std::shared_ptr<snn::Layer<snn::ForwardNeuron<128>,64>> layer1a = std::make_shared<snn::Layer<snn::ForwardNeuron<128>,64>>(256,hau,cross,mutation);
+    std::shared_ptr<snn::Layer<snn::ForwardNeuron<256>,64>> layer2a = std::make_shared<snn::Layer<snn::ForwardNeuron<256>,64>>(64,hau,cross,mutation);
+    std::shared_ptr<snn::Layer<snn::ForwardNeuron<64>,64>> layer4a = std::make_shared<snn::Layer<snn::ForwardNeuron<64>,64>>(4,hau,cross,mutation);
+
+
     first->setActivationFunction(slipy);
+
     layer1->setActivationFunction(slipy);
     layer2->setActivationFunction(slipy);
-    layer3->setActivationFunction(slipy);
+    //layer3->setActivationFunction(slipy);
     layer4->setActivationFunction(relu);
 
-    this->network.addLayer(first);
+    layer1a->setActivationFunction(slipy);
+    layer2a->setActivationFunction(slipy);
+    //layer3a->setActivationFunction(slipy);
+    layer4a->setActivationFunction(relu);
+
+    this->encoder.addLayer(first);
+
+    //this->network.addLayer(first);
     this->network.addLayer(layer1);
     this->network.addLayer(layer2);
-    this->network.addLayer(layer3);
+    //this->network.addLayer(layer3);
     this->network.addLayer(layer4);
+
+    this->direction.addLayer(layer1a);
+    this->direction.addLayer(layer2a);
+    //this->direction.addLayer(layer3a);
+    this->direction.addLayer(layer4a);
+
   }
 
   public:
@@ -198,7 +229,7 @@ class KapiBaraMind : public rclcpp::Node
         this->emotions_provider = this->create_client<kapibara_interfaces::srv::Emotions>("emotions",rmw_qos_profile_services_default,this->client_group);
         RCLCPP_INFO(this->get_logger(), "Creating service client for emotion retrival");
 
-        this->inputs=snn::SIMDVector(0.f,526);
+        this->inputs=snn::SIMDVector(0.f,530);
 
         this->create_network();
     }
@@ -255,9 +286,9 @@ class KapiBaraMind : public rclcpp::Node
 
     number frame_activ(const number& num)
     {
-        if((num>0.25f)&&(num<4.f))
+        if(num > 1.f)
         {
-            return ((num-0.25f)/(4.f-0.25f) - 0.5f)*2.f;
+            return num - 1.f;
         }
         
         return 0;
@@ -282,43 +313,64 @@ class KapiBaraMind : public rclcpp::Node
         RCLCPP_INFO(this->get_logger(), "Reward: %f",reward);
 
         this->network.applyReward(reward);
+        this->encoder.applyReward(reward);
+        this->direction.applyReward(reward);
 
-        snn::SIMDVector output = this->network.fire(this->inputs);
+        auto start = std::chrono::system_clock::now();
+
+        snn::SIMDVector encoded = this->encoder.fire(this->inputs);
+
+        snn::SIMDVector output = this->network.fire(encoded);
+        snn::SIMDVector dir = this->direction.fire(encoded);
+
+        auto end = std::chrono::system_clock::now();
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
         geometry_msgs::msg::Twist twist = geometry_msgs::msg::Twist();
 
-        RCLCPP_INFO(this->get_logger(), "Output: 1: %Lf 2: %Lf",output[0],output[1]);
+        RCLCPP_INFO(this->get_logger(), "Time: %d",elapsed.count());
 
         output.set(frame_activ(output[0])*this->max_linear_speed,0);
         output.set(frame_activ(output[1])*this->max_angular_speed,1);
 
-        /*if(output[0]>0)
+        if(output[0]>this->max_linear_speed)
         {
-            output.set(output[0]-this->max_linear_speed,0);
+            output.set(this->max_linear_speed,0);
         }
 
-        if(output[1]>0)
+        if(output[1]>this->max_angular_speed)
         {
-            output.set(output[1]-this->max_angular_speed,1);
+            output.set(this->max_angular_speed,1);
         }
 
-        if(abs(output[0])>this->max_linear_speed)
+        if(dir[0]>dir[1])
         {
-            output.set(this->max_linear_speed*(output[0]/abs(output[0])),0);
+            twist.linear.x=output[0];
+        }
+        else
+        {
+            twist.linear.x=-output[0];
         }
 
-        if(abs(output[1])>this->max_angular_speed)
+        if(dir[2]>dir[3])
         {
-            output.set(this->max_angular_speed*(output[1]/abs(output[1])),1);
-        }*/
+            twist.angular.z=output[1];
+        }
+        else
+        {
+            twist.angular.z=-output[1];
+        }
 
-        twist.linear.x=output[0];
-        twist.angular.z=output[1];
 
         RCLCPP_INFO(this->get_logger(), "Output: l: %f a: %f",twist.linear.x,twist.angular.z);
 
         inputs.set(output[0],524);
         inputs.set(output[1],525);
+
+        inputs.set(dir[0],526);
+        inputs.set(dir[1],527);
+        inputs.set(dir[2],528);
+        inputs.set(dir[3],529);
 
         this->twist_output->publish(twist);
     }

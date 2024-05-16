@@ -111,8 +111,8 @@ def generate_launch_description():
                     "/Gazebo/side_right"
                     ],
             "imu_topic":'/Gazebo/orientation',
-            "max_linear_speed":2.0,
-            "max_angular_speed":10.0
+            "max_linear_speed":1.0,
+            "max_angular_speed":3.0
         }]
     )
     # Run the node
