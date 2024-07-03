@@ -105,6 +105,8 @@ class KapiBaraMind : public rclcpp::Node
   double max_linear_speed;
   double max_angular_speed;
 
+  std::string network_path;
+
 
   rclcpp::CallbackGroup::SharedPtr sub_group;
   rclcpp::CallbackGroup::SharedPtr client_group;
@@ -166,6 +168,33 @@ class KapiBaraMind : public rclcpp::Node
 
   }
 
+  void save_network()
+  {
+    if(!this->network_path.empty())
+    {
+        RCLCPP_INFO(this->get_logger(), "Saving networks weights!");
+        NetworkSerializer::save(this->network,this->network_path+"/main");
+        NetworkSerializer::save(this->direction,this->network_path+"/dir");
+        NetworkSerializer::save(this->encoder,this->network_path+"/encoder");
+    }
+  }
+
+  void load_network()
+  {
+    if(!this->network_path.empty())
+    {
+        size_t i=0;
+        i+=NetworkSerializer::load(this->network,this->network_path+"/main");
+        i+=NetworkSerializer::load(this->direction,this->network_path+"/dir");
+        i+=NetworkSerializer::load(this->encoder,this->network_path+"/encoder"); 
+
+        if(i==0)
+        {
+            RCLCPP_INFO(this->get_logger(), "Network weights loaded!");
+        }
+    }
+  }
+
   public:
   
     KapiBaraMind()
@@ -188,8 +217,13 @@ class KapiBaraMind : public rclcpp::Node
         this->declare_parameter("max_linear_speed",5.f);
         this->declare_parameter("max_angular_speed",4.f);
 
+        // networks output path
+        this->declare_parameter("network_path","");
+
         this->max_linear_speed = this->get_parameter("max_linear_speed").as_double();
         this->max_angular_speed = this->get_parameter("max_angular_speed").as_double();
+
+        this->network_path = this->get_parameter("network_path").as_string();
 
 
         std::string odom_topic = this->get_parameter("odometry_topic").as_string();
@@ -232,6 +266,9 @@ class KapiBaraMind : public rclcpp::Node
         this->inputs=snn::SIMDVector(0.f,530);
 
         this->create_network();
+
+        this->load_network();
+
     }
 
 

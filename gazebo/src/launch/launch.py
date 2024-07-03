@@ -18,7 +18,7 @@ def generate_launch_description():
     launch=IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
             os.path.join(
-            get_package_share_directory(pkg_name),'launch','launch.sim..py')
+            get_package_share_directory(pkg_name),'launch','launch.gazebo.py')
         ]
     ))
     
