@@ -52,17 +52,21 @@ def generate_launch_description():
         PythonLaunchDescriptionSource([os.path.join(
             get_package_share_directory('gazebo_ros'), 'launch', 'gazebo.launch.py',)]),
             launch_arguments={
-                'world': '/app/src/rviz/playground.sdf',
+                #'world': '/app/src/rviz/playground.sdf',
                 'params_file': os.path.join(get_package_share_directory(pkg_name),"config/gazebo.yaml")
                 }.items()
         )
     
     spawn = Node(package='gazebo_ros', executable='spawn_entity.py',
-                    arguments=["-topic","/robot_description","-entity","kapibara","-timeout","240","-z","1"],
+                    arguments=["-topic","/robot_description","-entity","kapibara","-timeout","240","-Y","-1.57"],
                     output='screen')
     
     spawn_mine = Node(package='gazebo_ros', executable='spawn_entity.py',
-                    arguments=["-topic","/mine_description","-entity","mine","-timeout","240","-z","1"],
+                    arguments=["-topic","/mine_description","-entity","mine","-timeout","240","-x","-4.29","-y","4.22"],
+                    output='screen')
+    
+    spawn_maze = Node(package='gazebo_ros', executable='spawn_entity.py',
+                    arguments=["-file",os.path.join(get_package_share_directory(pkg_name),"props/Simple_Maze/model.sdf"),"-entity","Maze","-timeout","240","-x","0.844","-y","4.16"],
                     output='screen')
     
     diff_drive_spawner = Node(
@@ -114,6 +118,8 @@ def generate_launch_description():
     return LaunchDescription([
         gazebo,
         node_robot_state_publisher,
+        node_landmine_state_publisher,
+        spawn_maze,
         spawn,
         spawn_mine,
         fusion,

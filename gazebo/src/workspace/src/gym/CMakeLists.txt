@@ -39,7 +39,7 @@ endif()
 
 
 install(
-  DIRECTORY description config launch worlds
+  DIRECTORY description config launch worlds props
   DESTINATION share/${PROJECT_NAME}
 )
 
