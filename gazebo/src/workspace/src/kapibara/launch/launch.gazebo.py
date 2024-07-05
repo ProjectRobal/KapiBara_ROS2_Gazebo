@@ -25,8 +25,6 @@ def generate_launch_description():
     xacro_file = os.path.join(get_package_share_directory(pkg_name),'description/landmine.urdf.xacro')
     landmine_description = xacro.process_file(xacro_file).toxml()
 
-    gazebo_env = SetEnvironmentVariable("GAZEBO_MODEL_PATH", os.path.join(get_package_prefix("kapibara"), "share"))
-
     # Configure the node
     node_robot_state_publisher = Node(
         package='robot_state_publisher',
@@ -54,7 +52,11 @@ def generate_launch_description():
 
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
-            get_package_share_directory('gazebo_ros'), 'launch', 'gazebo.launch.py',)])
+            get_package_share_directory('gazebo_ros'), 'launch', 'gazebo.launch.py')
+                                       ]),
+        launch_arguments={
+            'params_file': os.path.join(get_package_share_directory(pkg_name),"config/gazebo.yaml")
+        }.items()
         )
     
    
