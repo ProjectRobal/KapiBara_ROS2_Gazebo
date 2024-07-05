@@ -5,6 +5,15 @@ from gymnasium import spaces
 
 from gym.utils.utils_launch import launch_environment
 
+import rclpy
+from rclpy.node import Node
+
+from std_srvs.srv import Empty
+
+from gym.agents.step_agnet import KapiBaraStepAgent
+from gym.utils.utils_sim import SimulationControl
+
+import time
 
 class Labirynth(gym.Env):
     metadata = {"render_modes": ["human"]}
@@ -45,58 +54,83 @@ class Labirynth(gym.Env):
 
         self.render_mode = render_mode
         
+        self._robot_data = np.zeros(high.shape,dtype = np.float32)
+        
+        # since target is immovable the position is constant for entire simulation
+        self._target_data = np.array([-4.290007,4.220005,0.499995],dtype=np.float32)
+        
+        rclpy.init()
+
+        self._node=Node("maze_env")
+        
         # Start an Gazbo using proper launch file
         
         self._env = launch_environment("labirynth")
-
+                
+        # create client for step control service for KapiBara robot
+        
+        self._robot = KapiBaraStepAgent(self._node)
+        
+        # create client for service to control gazebo environment
+        
+        self._sim = SimulationControl(self._node)
+        
+        # for some reason reset breaks simulation
+        
+        self._sim.pause()
+        self._sim.reset()    
+        self._sim.unpause()
     
     def _get_obs(self):
-        return {"agent": self._agent_location, "target": self._target_location}
+        return {"robot": self._robot_data, "target": self._target_data}
 
     
     def _get_info(self):
         return {
             "distance": np.linalg.norm(
-                self._agent_location - self._target_location, ord=1
+                self._robot_data[6:9] - self._target_data, ord=1
             )
         }
         
     def reset(self, seed=None, options=None):
         # We need the following line to seed self.np_random
         super().reset(seed=seed)
-
-        # Choose the agent's location uniformly at random
-        self._agent_location = self.np_random.integers(0, self.size, size=2, dtype=int)
-
-        # We will sample the target's location randomly until it does not coincide with the agent's location
-        self._target_location = self._agent_location
-        while np.array_equal(self._target_location, self._agent_location):
-            self._target_location = self.np_random.integers(
-                0, self.size, size=2, dtype=int
-            )
+        
+        # reset gazebo
+        self._sim.reset()
+        
+        self._robot_data = np.zeros(self._robot_data.shape,dtype = np.float32)
 
         observation = self._get_obs()
         info = self._get_info()
 
         return observation, info
     
+    # that doesn't work as it should
     def step(self, action):
         # Map the action (element of {0,1,2,3}) to the direction we walk in
-        direction = self._action_to_direction[action]
+        self._robot.move(action)
+        self._sim.unpause()
+        # wait couple of steps
+        #self._robot.wait_for_steps()
+        time.sleep(1.0)
+        
+        self._sim.pause()
         # We use `np.clip` to make sure we don't leave the grid
-        self._agent_location = np.clip(
-            self._agent_location + direction, 0, self.size - 1
-        )
+        
         # An episode is done iff the agent has reached the target
-        terminated = np.array_equal(self._agent_location, self._target_location)
+        terminated = np.array_equal(self._robot_data[6:9], self._target_data)
         reward = 1 if terminated else 0  # Binary sparse rewards
         observation = self._get_obs()
         info = self._get_info()
+        done = False
 
-        return observation, reward, terminated, False, info
+        return observation, reward, terminated, done, info
     
     def render(self):
         return None
     
     def close(self):
-        pass
+        self._env.kill()
+        self._env.join()
+        self._env.close()

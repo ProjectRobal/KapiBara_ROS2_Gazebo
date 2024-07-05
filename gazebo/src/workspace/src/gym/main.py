@@ -2,9 +2,14 @@
 
 from gym.environments.labirynth import Labirynth
 
+from random import randint
 
 def main():
     env = Labirynth()
+        
+    while True:
+        # it doesn't work somehow
+        env.step(0)
 
 
 if __name__ == "__main__":

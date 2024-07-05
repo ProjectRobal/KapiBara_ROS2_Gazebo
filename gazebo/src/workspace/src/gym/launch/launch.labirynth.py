@@ -100,20 +100,6 @@ def generate_launch_description():
     )
 
     
-    # mind = Node(
-    #     package="kapibara_mind",
-    #     executable="mind",
-    #     parameters=[{
-    #         "tof_topics":["/Gazebo/front_left",
-    #                 "/Gazebo/front_right",
-    #                 "/Gazebo/side_left",
-    #                 "/Gazebo/side_right"
-    #                 ],
-    #         "imu_topic":'/Gazebo/orientation',
-    #         "max_linear_speed":1.0,
-    #         "max_angular_speed":3.0
-    #     }]
-    # )
     # Run the node
     return LaunchDescription([
         gazebo,
