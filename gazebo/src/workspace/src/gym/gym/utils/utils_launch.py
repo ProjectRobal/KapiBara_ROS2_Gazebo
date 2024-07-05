@@ -2,7 +2,11 @@ from launch.launch_service import LaunchService
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 
+from ament_index_python.packages import get_package_share_directory
+
 from multiprocessing import Process
+
+import os
 
 def launch(launch_path:str)->Process:
     
@@ -19,3 +23,8 @@ def launch(launch_path:str)->Process:
     return process
     
 
+def launch_environment(env_name:str)->Process:
+    
+    launch_file = os.path.join(get_package_share_directory("gym"),"launch/launch."+env_name+".py")
+    
+    return launch(launch_file)

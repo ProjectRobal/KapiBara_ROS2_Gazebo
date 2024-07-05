@@ -13,12 +13,21 @@ from launch.actions import SetEnvironmentVariable
 def generate_launch_description():
 
     # Specify the name of the package and path to xacro file within the package
-    pkg_name = 'kapibara'
+    # pkg_name = 'kapibara'
+
+    # launch=IncludeLaunchDescription(
+    #     PythonLaunchDescriptionSource([
+    #         os.path.join(
+    #         get_package_share_directory(pkg_name),'launch','launch.gazebo.py')
+    #     ]
+    # ))
+    
+    pkg_name = 'gym'
 
     launch=IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
             os.path.join(
-            get_package_share_directory(pkg_name),'launch','launch.gazebo.py')
+            get_package_share_directory(pkg_name),'launch','start.gym.py')
         ]
     ))
     

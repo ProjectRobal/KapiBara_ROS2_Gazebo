@@ -61,7 +61,7 @@ def generate_launch_description():
                     arguments=["-topic","/robot_description","-entity","kapibara","-timeout","240","-z","1"],
                     output='screen')
     
-    spawn = Node(package='gazebo_ros', executable='spawn_entity.py',
+    spawn_mine = Node(package='gazebo_ros', executable='spawn_entity.py',
                     arguments=["-topic","/mine_description","-entity","mine","-timeout","240","-z","1"],
                     output='screen')
     
@@ -96,30 +96,31 @@ def generate_launch_description():
     )
 
     
-    mind = Node(
-        package="kapibara_mind",
-        executable="mind",
-        parameters=[{
-            "tof_topics":["/Gazebo/front_left",
-                    "/Gazebo/front_right",
-                    "/Gazebo/side_left",
-                    "/Gazebo/side_right"
-                    ],
-            "imu_topic":'/Gazebo/orientation',
-            "max_linear_speed":1.0,
-            "max_angular_speed":3.0
-        }]
-    )
+    # mind = Node(
+    #     package="kapibara_mind",
+    #     executable="mind",
+    #     parameters=[{
+    #         "tof_topics":["/Gazebo/front_left",
+    #                 "/Gazebo/front_right",
+    #                 "/Gazebo/side_left",
+    #                 "/Gazebo/side_right"
+    #                 ],
+    #         "imu_topic":'/Gazebo/orientation',
+    #         "max_linear_speed":1.0,
+    #         "max_angular_speed":3.0
+    #     }]
+    # )
     # Run the node
     return LaunchDescription([
         gazebo,
         node_robot_state_publisher,
         spawn,
+        spawn_mine,
         fusion,
         diff_drive_spawner,
         joint_broad_spawner,
-        ears_controller_spawner,
-        mind
+        ears_controller_spawner
+        #mind
     ])
 
 

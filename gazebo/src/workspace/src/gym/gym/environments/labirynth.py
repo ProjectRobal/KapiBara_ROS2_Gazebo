@@ -1,23 +1,30 @@
 import numpy as np
-import pygame
 
 import gymnasium as gym
 from gymnasium import spaces
 
+from gym.utils.utils_launch import launch_environment
 
-class GridWorldEnv(gym.Env):
+
+class Labirynth(gym.Env):
     metadata = {"render_modes": ["human"]}
 
-    def __init__(self, render_mode=None, size=5):
-        self.size = size  # The size of the square grid
-        self.window_size = 512  # The size of the PyGame window
+    def __init__(self, render_mode=None):
 
         # Observations are dictionaries with the agent's and the target's location.
         # Each location is encoded as an element of {0, ..., `size`}^2, i.e. MultiDiscrete([size, size]).
+        # Inputs are 4 laser sensors distance, quanterion , position
+        
+        high = np.array([1.0,1.0,1.0,1.0 , 1.0,1.0,1.0,1.0 , np.inf,np.inf,np.inf ],dtype=np.float32)
+        low = np.array([0.0,0.0,0.0,0.0 , -1.0,-1.0,-1.0,-1.0 , -np.inf,-np.inf,-np.inf ],dtype=np.float32)
+        
+        # Position of a target in labirynth
+        target_high = np.array([np.inf,np.inf,np.inf],dtype=np.float32)
+        
         self.observation_space = spaces.Dict(
             {
-                "agent": spaces.Box(0, size - 1, shape=(2,), dtype=int),
-                "target": spaces.Box(0, size - 1, shape=(2,), dtype=int),
+                "robot": spaces.Box(low, high, dtype=np.float32),
+                "target": spaces.Box(-target_high, target_high, dtype=np.float32),
             }
         )
 
@@ -36,16 +43,12 @@ class GridWorldEnv(gym.Env):
             3: np.array([0, -1]),
         }
 
-        assert render_mode is None or render_mode in self.metadata["render_modes"]
         self.render_mode = render_mode
+        
+        # Start an Gazbo using proper launch file
+        
+        self._env = launch_environment("labirynth")
 
-        """
-        If human-rendering is used, `self.window` will be a reference
-        to the window that we draw to. `self.clock` will be a clock that is used
-        to ensure that the environment is rendered at the correct framerate in
-        human-mode. They will remain `None` until human-mode is used for the
-        first time.
-        """
     
     def _get_obs(self):
         return {"agent": self._agent_location, "target": self._target_location}

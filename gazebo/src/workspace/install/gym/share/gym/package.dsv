@@ -1,0 +1,11 @@
+source;share/gym/hook/cmake_prefix_path.ps1
+source;share/gym/hook/cmake_prefix_path.dsv
+source;share/gym/hook/cmake_prefix_path.sh
+source;share/gym/hook/pythonpath.ps1
+source;share/gym/hook/pythonpath.dsv
+source;share/gym/hook/pythonpath.sh
+source;share/gym/local_setup.bash
+source;share/gym/local_setup.dsv
+source;share/gym/local_setup.ps1
+source;share/gym/local_setup.sh
+source;share/gym/local_setup.zsh

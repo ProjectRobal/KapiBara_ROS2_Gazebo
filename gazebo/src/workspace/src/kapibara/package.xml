@@ -17,6 +17,15 @@
   <depend>sensor_msgs</depend>
   <depend>geometry_msgs</depend>
 
+  <depend>python3-numpy</depend>
+
+  <depend>ros-iron-xacro</depend>
+  <depend>ros-iron-turtlesim</depend>
+  <depend>ros-iron-teleop-twist-keyboard</depend>
+  <depend>ros-iron-imu-tools</depend>
+  <depend>ros-iron-ros2-controllers</depend>
+  <depend>ros-iron-compressed-image-transport</depend>
+
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
   <build_depend>xacro</build_depend>
