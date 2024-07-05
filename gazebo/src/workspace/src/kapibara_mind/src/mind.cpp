@@ -173,9 +173,9 @@ class KapiBaraMind : public rclcpp::Node
     if(!this->network_path.empty())
     {
         RCLCPP_INFO(this->get_logger(), "Saving networks weights!");
-        NetworkSerializer::save(this->network,this->network_path+"/main");
-        NetworkSerializer::save(this->direction,this->network_path+"/dir");
-        NetworkSerializer::save(this->encoder,this->network_path+"/encoder");
+        snn::NetworkSerializer::save(this->network,this->network_path+"/main");
+        snn::NetworkSerializer::save(this->direction,this->network_path+"/dir");
+        snn::NetworkSerializer::save(this->encoder,this->network_path+"/encoder");
     }
   }
 
@@ -184,9 +184,9 @@ class KapiBaraMind : public rclcpp::Node
     if(!this->network_path.empty())
     {
         size_t i=0;
-        i+=NetworkSerializer::load(this->network,this->network_path+"/main");
-        i+=NetworkSerializer::load(this->direction,this->network_path+"/dir");
-        i+=NetworkSerializer::load(this->encoder,this->network_path+"/encoder"); 
+        i+=snn::NetworkSerializer::load(this->network,this->network_path+"/main");
+        i+=snn::NetworkSerializer::load(this->direction,this->network_path+"/dir");
+        i+=snn::NetworkSerializer::load(this->encoder,this->network_path+"/encoder"); 
 
         if(i==0)
         {

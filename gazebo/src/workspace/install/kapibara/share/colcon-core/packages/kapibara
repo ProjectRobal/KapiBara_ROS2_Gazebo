@@ -1,1 +1,1 @@
-geometry_msgs:kapibara_interfaces:rclcpp:rclpy:sensor_msgs:std_msgs
+geometry_msgs:kapibara_interfaces:python3-numpy:rclcpp:rclpy:ros-iron-compressed-image-transport:ros-iron-imu-tools:ros-iron-ros2-controllers:ros-iron-teleop-twist-keyboard:ros-iron-turtlesim:ros-iron-xacro:sensor_msgs:std_msgs
