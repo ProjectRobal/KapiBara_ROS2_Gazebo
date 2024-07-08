@@ -31,19 +31,25 @@ class KapiBaraStepAgent:
         Actions for agents: up , down , left , right
         in form of pair ( linear speed, angular speed)
     '''
-    _actions = [(1.0,0.0),(-1.0,0.0),(0.0,1.0),(0.0,-1.0)]
+    _actions = [(-1.0,0.0),(1.0,0.0),(0.0,1.0),(0.0,-1.0)]
     
     def clock_step_counter(self,clock):
         self._step_count += 1
+        
+        self._node.get_logger().info(f"Got frame: {self._step_count}")
     
     def tof_callback(self,id,tof_msg:Range):
         self._observations[id] = tof_msg.range
+        
+        self._node.get_logger().info(f"Got range id: {id}")
         
     def orientaion_callback(self,orientaion:Quaternion):
         self._observations[4] = orientaion.x
         self._observations[5] = orientaion.y
         self._observations[6] = orientaion.z
         self._observations[7] = orientaion.w
+        
+        self._node.get_logger().info("Got orientation!")
     
     def odometry_callback(self,odometry:Odometry):
         position = odometry.pose.pose.position
@@ -51,6 +57,8 @@ class KapiBaraStepAgent:
         self._observations[8] = position.x
         self._observations[9] = position.y
         self._observations[10] = position.z
+        
+        self._node.get_logger().info("Got odometry!")
         
     
     def __init__(self,parent_node:Node, max_linear_speed:float=None, max_angular_speed:float=None) -> None:
@@ -92,8 +100,13 @@ class KapiBaraStepAgent:
         
         self._step_count = 0
         
+        self._step_counter_qos =  rclpy.qos.QoSProfile(reliability=rclpy.qos.ReliabilityPolicy.BEST_EFFORT,
+                                          history=rclpy.qos.HistoryPolicy.KEEP_LAST,
+                                          durability=rclpy.qos.DurabilityPolicy.VOLATILE,
+                                          depth=10)
+        
         # step counter
-        self._step_counter = self._node.create_subscription(Clock,"/clock",self.clock_step_counter,10)
+        self._step_counter = self._node.create_subscription(Clock,"/clock",self.clock_step_counter,qos_profile=self._step_counter_qos)
 
         
     def move(self,direction):
@@ -108,11 +121,13 @@ class KapiBaraStepAgent:
         twist.linear.x = action[0] * self._max_linear_speed
         
         self.twist_output.publish(twist)
-        
-        self._step_count = 0
+                
+        #rclpy.spin_once(self._node)
         
     def wait_for_steps(self):
-        while self._step_count < 4:
+        self._step_count = 0
+        while self._step_count < 10:
+            self._node.get_logger().info("Waiting for clock!")
             rclpy.spin_once(self._node)
             
     def get_observations(self)->np.ndarray:

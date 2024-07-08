@@ -13,6 +13,8 @@ def generate_launch_description():
     gym = Node(
         package="gym",
         executable="main.py",
+        output='screen',
+        emulate_tty=True,
         arguments=['--ros-args', '--log-level', logger]
     )
     

@@ -37,16 +37,31 @@ class SimulationControl:
         '''
             Reset simulation
         '''    
-        self._reset_env_srv.call(Empty.Request())
+        future = self._reset_env_srv.call_async(Empty.Request())
+        
+        while rclpy.ok():
+            rclpy.spin_once(self._node)
+            if future.done():
+                break
         
     def pause(self):
         '''
             Pause simulation
         '''    
-        self._pause_env_srv.call(Empty.Request())
+        future = self._pause_env_srv.call_async(Empty.Request())
+        
+        while rclpy.ok():
+            rclpy.spin_once(self._node)
+            if future.done():
+                break
         
     def unpause(self):
         '''
             Unpause simulation
         '''    
-        self._unpause_env_srv.call(Empty.Request())
+        future = self._unpause_env_srv.call_async(Empty.Request())
+        
+        while rclpy.ok():
+            rclpy.spin_once(self._node)
+            if future.done():
+                break

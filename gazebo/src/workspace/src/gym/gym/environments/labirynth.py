@@ -66,8 +66,8 @@ class Labirynth(gym.Env):
         self._node=Node("maze_env")
         
         # run spin in seaparated thread
-        self._spin_thread = Thread(target=rclpy.spin,args=(self._node,))
-        self._spin_thread.start()
+        #self._spin_thread = Thread(target=rclpy.spin,args=(self._node,))
+        #self._spin_thread.start()
         # Start an Gazbo using proper launch file
         
         self._env = launch_environment("labirynth")
@@ -114,8 +114,7 @@ class Labirynth(gym.Env):
         self._robot.move(action)
         self._sim.unpause()
         # wait couple of steps
-        #self._robot.wait_for_steps()
-        time.sleep(1.0)
+        self._robot.wait_for_steps()
         
         self._sim.pause()
         # We use `np.clip` to make sure we don't leave the grid
