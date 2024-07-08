@@ -13,11 +13,13 @@ from std_srvs.srv import Empty
 from gym.agents.step_agnet import KapiBaraStepAgent
 from gym.utils.utils_sim import SimulationControl
 
+from threading import Thread
+
 import time
 
 class Labirynth(gym.Env):
     metadata = {"render_modes": ["human"]}
-
+    
     def __init__(self, render_mode=None):
 
         # Observations are dictionaries with the agent's and the target's location.
@@ -63,6 +65,9 @@ class Labirynth(gym.Env):
 
         self._node=Node("maze_env")
         
+        # run spin in seaparated thread
+        self._spin_thread = Thread(target=rclpy.spin,args=(self._node,))
+        self._spin_thread.start()
         # Start an Gazbo using proper launch file
         
         self._env = launch_environment("labirynth")
@@ -75,11 +80,8 @@ class Labirynth(gym.Env):
         
         self._sim = SimulationControl(self._node)
         
-        # for some reason reset breaks simulation
-        
         self._sim.pause()
-        self._sim.reset()    
-        self._sim.unpause()
+        self._sim.reset()
     
     def _get_obs(self):
         return {"robot": self._robot_data, "target": self._target_data}

@@ -9,7 +9,8 @@ def main():
         
     while True:
         # it doesn't work somehow
-        env.step(0)
+        pass
+        #env.step(0)
 
 
 if __name__ == "__main__":
