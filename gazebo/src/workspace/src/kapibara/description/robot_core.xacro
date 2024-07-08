@@ -43,7 +43,7 @@
         </visual>
         
 
-        <visual name="left_wheel2_visual">
+        <!-- <visual name="left_wheel2_visual">
             <origin rpy="${-pi/2} 0 0" xyz="0.065 0.066 0.01"/>
             <geometry>
                 <cylinder radius="0.024" length="0.044" />
@@ -140,7 +140,7 @@
                     </ode>        
                 </friction>      
             </surface>  
-        </collision>
+        </collision> -->
 
     </link>
 
@@ -186,7 +186,7 @@
         <child link="left_wheel1" />
         <axis xyz="0 0 1"/>
         
-        <origin rpy="${-pi/2} 0 0" xyz="0.005 0.066 0.01"/>
+        <origin rpy="${-pi/2} 0 0" xyz="0.005 0.066 0.0135"/>
         <joint_properties damping="1.0" friction="1.0" /> 
         <!-- <limit effort="10000" velocity="1000"/>  -->
     </joint>
@@ -212,12 +212,11 @@
     </link>
 
 
-    <!-- <joint name="wheel_left2_joint" type="continuous">
+    <joint name="wheel_left2_joint" type="fixed">
         <parent link="chassis" />
         <child link="left_wheel2" />
         <axis xyz="0 0 1"/>
-        <origin rpy="${-pi/2} 0 0" xyz="0.005 0.066 0.0165"/>
-        <joint_properties damping="1.0" friction="1.0" /> 
+        <origin rpy="${-pi/2} 0 0" xyz="0.065 0.066 0.0135"/>
     </joint>
 
 
@@ -240,13 +239,18 @@
         </xacro:inertial_cylinder>
     </link>
 
+    <gazebo reference="left_wheel2">
+        <material>Gazebo/White</material>
+        <mu1 value="0.001"/>
+        <mu2 value="0.001"/>
+    </gazebo>
 
-    <joint name="wheel_left3_joint" type="continuous">
+
+    <joint name="wheel_left3_joint" type="fixed">
         <parent link="chassis" />
         <child link="left_wheel3" />
         <axis xyz="0 0 1"/>
-        <origin rpy="${-pi/2} 0 0" xyz="-0.055 0.066 0.0165"/>
-        <joint_properties damping="1.0" friction="1.0" /> 
+        <origin rpy="${-pi/2} 0 0" xyz="-0.055 0.066 0.0135"/>
     </joint>
 
 
@@ -267,7 +271,13 @@
         <xacro:inertial_cylinder mass="0.1" radius="0.024" length="0.044">
             <origin xyz="0 0 0" rpy="0 0 1" />
         </xacro:inertial_cylinder>
-    </link> -->
+    </link>
+
+    <gazebo reference="left_wheel3">
+        <material>Gazebo/White</material>
+        <mu1 value="0.001"/>
+        <mu2 value="0.001"/>
+    </gazebo>
 
     <!-- RIGHT WHEEL LINK -->
 
@@ -276,7 +286,7 @@
         <child link="right_wheel1" />
         <axis xyz="0 0 1"/>
         
-        <origin rpy="${-pi/2} 0 0" xyz="0.005 -0.066 0.01"/>
+        <origin rpy="${-pi/2} 0 0" xyz="0.005 -0.066 0.0135"/>
         <joint_properties damping="1.0" friction="1.0" /> 
         <!-- <limit effort="10000" velocity="1000"/>  -->
     </joint>
@@ -302,12 +312,11 @@
     </link>
 
 
-    <!-- <joint name="wheel_right2_joint" type="continuous">
+    <joint name="wheel_right2_joint" type="fixed">
         <parent link="chassis" />
         <child link="right_wheel2" />
         <axis xyz="0 0 1"/>
-        <origin rpy="${-pi/2} 0 0" xyz="0.005 -0.066 0.0165"/>
-        <joint_properties damping="1.0" friction="1.0" /> 
+        <origin rpy="${-pi/2} 0 0" xyz="0.065 -0.066 0.0135"/>
     </joint>
 
 
@@ -330,13 +339,18 @@
         </xacro:inertial_cylinder>
     </link>
 
+    <gazebo reference="right_wheel2">
+        <material>Gazebo/White</material>
+        <mu1 value="0.001"/>
+        <mu2 value="0.001"/>
+    </gazebo>
 
-    <joint name="wheel_right3_joint" type="continuous">
+
+    <joint name="wheel_right3_joint" type="fixed">
         <parent link="chassis" />
         <child link="right_wheel3" />
         <axis xyz="0 0 1"/>
-        <origin rpy="${-pi/2} 0 0" xyz="-0.055 -0.066 0.0165"/>
-        <joint_properties damping="1.0" friction="1.0" /> 
+        <origin rpy="${-pi/2} 0 0" xyz="-0.055 -0.066 0.0135"/>
     </joint>
 
 
@@ -352,12 +366,18 @@
             <origin xyz="0 0 0" />
             <geometry>
                 <cylinder radius="0.024" length="0.044" />
-            </geometry> 
+            </geometry>
         </collision>
         <xacro:inertial_cylinder mass="0.1" radius="0.024" length="0.044">
             <origin xyz="0 0 0" rpy="0 0 1" />
         </xacro:inertial_cylinder>
-    </link> -->
+    </link>
+
+    <gazebo reference="right_wheel3">
+        <material>Gazebo/White</material>
+        <mu1 value="0.001"/>
+        <mu2 value="0.001"/>
+    </gazebo>
 
     <!-- EARS -->
 
