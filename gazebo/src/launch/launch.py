@@ -23,6 +23,10 @@ def generate_launch_description():
     # ))
     
     pkg_name = 'gym'
+    
+    rviz = Node(package='rviz2', executable='rviz2',
+                    arguments=[],
+                    output='screen')
 
     launch=IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
@@ -38,7 +42,8 @@ def generate_launch_description():
 
     # Run the node
     return LaunchDescription([
-        launch
+        launch,
+        rviz
     ])
 
 

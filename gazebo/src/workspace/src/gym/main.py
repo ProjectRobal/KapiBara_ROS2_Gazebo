@@ -9,6 +9,7 @@ def main():
         
     while True:
         # it doesn't work somehow
+        #env.step(randint(0,3))
         env.step(0)
 
 

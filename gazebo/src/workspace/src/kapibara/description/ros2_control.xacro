@@ -6,7 +6,7 @@
             <hardware>
                 <plugin>tb6612_drive_simple/TB6612DriveSimple</plugin>
                 <param name="left_wheel_name">wheel_left1_joint</param>
-                <param name="right_wheel_name">wheel_right3_joint</param>
+                <param name="right_wheel_name">wheel_right1_joint</param>
                 <param name="max_speed">10</param>
                 <param name="loop_rate">30</param>
                 <param name="left_gpioA">406</param>
@@ -24,7 +24,7 @@
                 <state_interface name="position" />
             </joint>
 
-            <joint name="wheel_right3_joint">
+            <joint name="wheel_right1_joint">
                 <command_interface name="velocity">
                     <param name="min">-10</param>
                     <param name="max">10</param>
@@ -49,7 +49,7 @@
                 <state_interface name="position" />
             </joint>
 
-            <joint name="wheel_right3_joint">
+            <joint name="wheel_right1_joint">
                 <command_interface name="velocity">
                     <param name="min">-10</param>
                     <param name="max">10</param>
@@ -57,6 +57,8 @@
                 <state_interface name="velocity" />
                 <state_interface name="position" />
             </joint>
+
+            
 
             <joint name="right_ear_joint">
                 <command_interface name="position">
