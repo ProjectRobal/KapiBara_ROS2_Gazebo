@@ -16,7 +16,7 @@ import numpy as np
 import rclpy
 from rclpy.node import Node
 
-from sensor_msgs.msg import Range
+from sensor_msgs.msg import Range,Imu
 
 from geometry_msgs.msg import Quaternion
 from geometry_msgs.msg import Twist
@@ -36,20 +36,23 @@ class KapiBaraStepAgent:
     def clock_step_counter(self,clock):
         self._step_count += 1
         
-        self._node.get_logger().info(f"Got frame: {self._step_count}")
+        self._node.get_logger().debug(f"Got frame: {self._step_count}")
     
     def tof_callback(self,id,tof_msg:Range):
         self._observations[id] = tof_msg.range
         
-        self._node.get_logger().info(f"Got range id: {id}")
+        self._node.get_logger().debug(f"Got range id: {id}")
         
-    def orientaion_callback(self,orientaion:Quaternion):
-        self._observations[4] = orientaion.x
-        self._observations[5] = orientaion.y
-        self._observations[6] = orientaion.z
-        self._observations[7] = orientaion.w
+    def orientaion_callback(self,imu:Imu):
         
-        self._node.get_logger().info("Got orientation!")
+        orientation = imu.orientation
+        
+        self._observations[4] = orientation.x
+        self._observations[5] = orientation.y
+        self._observations[6] = orientation.z
+        self._observations[7] = orientation.w
+        
+        self._node.get_logger().debug("Got orientation!")
     
     def odometry_callback(self,odometry:Odometry):
         position = odometry.pose.pose.position
@@ -58,7 +61,7 @@ class KapiBaraStepAgent:
         self._observations[9] = position.y
         self._observations[10] = position.z
         
-        self._node.get_logger().info("Got odometry!")
+        self._node.get_logger().debug("Got odometry!")
         
     
     def __init__(self,parent_node:Node, max_linear_speed:float=None, max_angular_speed:float=None) -> None:
@@ -88,7 +91,7 @@ class KapiBaraStepAgent:
                 
         # creates subscription for orientation
         
-        self._orientaion_sub = self._node.create_subscription(Quaternion,"/Gazebo/orientation",self.orientaion_callback,10)
+        self._orientaion_sub = self._node.create_subscription(Imu,"/Gazebo/orientation",self.orientaion_callback,10)
         
         # creates subcription for position
         
@@ -127,7 +130,7 @@ class KapiBaraStepAgent:
     def wait_for_steps(self):
         self._step_count = 0
         while self._step_count < 10:
-            self._node.get_logger().info("Waiting for clock!")
+            self._node.get_logger().debug("Waiting for clock!")
             rclpy.spin_once(self._node)
             
     def get_observations(self)->np.ndarray:

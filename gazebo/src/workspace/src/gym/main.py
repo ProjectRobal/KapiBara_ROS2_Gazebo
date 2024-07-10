@@ -10,6 +10,12 @@ def main():
     while True:
         # it doesn't work somehow
         observation, reward, terminated, done, info = env.step(randint(0,3))
+        
+        print("Observation: ",observation)
+        print("Reward: ",reward)
+        print("Done: ",done)
+        print("Terminated: ",terminated)
+        print("Info: ",info)
         #env.step(0)
 
 

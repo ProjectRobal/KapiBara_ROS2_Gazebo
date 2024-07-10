@@ -90,7 +90,7 @@ class Labirynth(gym.Env):
     def _get_info(self):
         return {
             "distance": np.linalg.norm(
-                self._robot_data[6:9] - self._target_data, ord=1
+                self._robot_data[8:11] - self._target_data, ord=1
             )
         }
         
@@ -117,12 +117,18 @@ class Labirynth(gym.Env):
         self._robot.wait_for_steps()
         
         self._sim.pause()
+        
+        observation = self._robot.get_observations()
+        
+        self._robot_data = observation
         # We use `np.clip` to make sure we don't leave the grid
         
         # An episode is done iff the agent has reached the target
-        terminated = np.array_equal(self._robot_data[6:9], self._target_data)
-        reward = 1 if terminated else 0  # Binary sparse rewards
-        observation = self._get_obs()
+        terminated = np.array_equal(self._robot_data[8:11], self._target_data)
+        
+        # We want agent to do as few steps as possible
+        
+        reward = 1 if terminated else -1  # Binary sparse rewards
         info = self._get_info()
         done = False
 
