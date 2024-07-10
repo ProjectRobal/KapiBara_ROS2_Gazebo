@@ -113,8 +113,8 @@
 
     <gazebo reference="left_wheel1">
         <material>Gazebo/White</material>
-        <mu1 value="0.1"/>
-        <mu2 value="0.1"/>
+        <mu1 value="0.5"/>
+        <mu2 value="0.5"/>
     </gazebo>
 
 
@@ -147,8 +147,8 @@
 
     <gazebo reference="left_wheel2">
         <material>Gazebo/White</material>
-        <mu1 value="0.1"/>
-        <mu2 value="0.1"/>
+        <mu1 value="0.5"/>
+        <mu2 value="0.5"/>
     </gazebo>
 
 
@@ -181,8 +181,8 @@
 
     <gazebo reference="left_wheel3">
         <material>Gazebo/White</material>
-        <mu1 value="0.1"/>
-        <mu2 value="0.1"/>
+        <mu1 value="0.5"/>
+        <mu2 value="0.5"/>
     </gazebo>
 
     <!-- RIGHT WHEEL LINK -->
@@ -219,8 +219,8 @@
 
     <gazebo reference="right_wheel1">
         <material>Gazebo/White</material>
-        <mu1 value="0.1"/>
-        <mu2 value="0.1"/>
+        <mu1 value="0.5"/>
+        <mu2 value="0.5"/>
     </gazebo>
 
 
@@ -253,8 +253,8 @@
 
     <gazebo reference="right_wheel2">
         <material>Gazebo/White</material>
-        <mu1 value="0.1"/>
-        <mu2 value="0.1"/>
+        <mu1 value="0.5"/>
+        <mu2 value="0.5"/>
     </gazebo>
 
 
@@ -287,8 +287,8 @@
 
     <gazebo reference="right_wheel3">
         <material>Gazebo/White</material>
-        <mu1 value="0.1"/>
-        <mu2 value="0.1"/>
+        <mu1 value="0.5"/>
+        <mu2 value="0.5"/>
     </gazebo>
 
     <!-- EARS -->

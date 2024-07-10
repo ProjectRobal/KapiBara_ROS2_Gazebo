@@ -68,7 +68,7 @@ class KapiBaraStepAgent:
         self._observations = np.zeros(11,dtype=np.float32)
         
         if max_angular_speed is None:
-            self._max_angular_speed = 5.0
+            self._max_angular_speed = 1.0
         else:
             self._max_angular_speed = max_angular_speed
             
