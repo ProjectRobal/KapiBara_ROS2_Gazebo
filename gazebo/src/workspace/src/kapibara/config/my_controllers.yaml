@@ -20,8 +20,8 @@ motors:
 
     base_frame_id: base_link
 
-    left_wheel_names: ['wheel_left1_joint']
-    right_wheel_names: ['wheel_right1_joint']
+    left_wheel_names: ['wheel_left1_joint','wheel_left2_joint','wheel_left3_joint']
+    right_wheel_names: ['wheel_right1_joint','wheel_right2_joint','wheel_right3_joint']
     wheel_separation: 0.132
     wheel_radius: 0.024
 

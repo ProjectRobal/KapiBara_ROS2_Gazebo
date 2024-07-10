@@ -58,6 +58,42 @@
                 <state_interface name="position" />
             </joint>
 
+            <joint name="wheel_left2_joint">
+                <command_interface name="velocity">
+                    <param name="min">-10</param>
+                    <param name="max">10</param>
+                </command_interface>
+                <state_interface name="velocity" />
+                <state_interface name="position" />
+            </joint>
+
+            <joint name="wheel_right2_joint">
+                <command_interface name="velocity">
+                    <param name="min">-10</param>
+                    <param name="max">10</param>
+                </command_interface>
+                <state_interface name="velocity" />
+                <state_interface name="position" />
+            </joint>
+
+            <joint name="wheel_left3_joint">
+                <command_interface name="velocity">
+                    <param name="min">-10</param>
+                    <param name="max">10</param>
+                </command_interface>
+                <state_interface name="velocity" />
+                <state_interface name="position" />
+            </joint>
+
+            <joint name="wheel_right3_joint">
+                <command_interface name="velocity">
+                    <param name="min">-10</param>
+                    <param name="max">10</param>
+                </command_interface>
+                <state_interface name="velocity" />
+                <state_interface name="position" />
+            </joint>
+
             
 
             <joint name="right_ear_joint">
