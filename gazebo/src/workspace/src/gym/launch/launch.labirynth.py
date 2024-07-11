@@ -55,7 +55,7 @@ def generate_launch_description():
         PythonLaunchDescriptionSource([os.path.join(
             get_package_share_directory('gazebo_ros'), 'launch', 'gazebo.launch.py',)]),
             launch_arguments={
-                #'world': '/app/src/rviz/playground.sdf',
+                'world': os.path.join(get_package_share_directory(pkg_name),'worlds/world.sdf'),
                 'params_file': os.path.join(get_package_share_directory(pkg_name),"config/gazebo.yaml")
                 }.items()
         )

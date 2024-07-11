@@ -17,6 +17,7 @@
   <depend>rosgraph_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>geometry_msgs</depend>
+  <depend>gazebo_msgs</depend>
   <depend>kapibara_interfaces</depend>
   <depend>kapibara</depend>
   <depend>python3-numpy</depend>

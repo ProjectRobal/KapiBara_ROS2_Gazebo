@@ -21,9 +21,6 @@ def generate_launch_description():
     # Use xacro to process the file
     xacro_file = os.path.join(get_package_share_directory(pkg_name),file_subpath)
     robot_description_raw = xacro.process_file(xacro_file,mappings={'sim_mode' : 'true'}).toxml()
-    
-    xacro_file = os.path.join(get_package_share_directory(pkg_name),'description/landmine.urdf.xacro')
-    landmine_description = xacro.process_file(xacro_file).toxml()
 
     # Configure the node
     node_robot_state_publisher = Node(
@@ -32,18 +29,6 @@ def generate_launch_description():
         output='screen',
         parameters=[{'robot_description': robot_description_raw,
         'use_sim_time': True}] # add other parameters here if required
-    )
-    
-    # Configure the node
-    node_landmine_state_publisher = Node(
-        package='robot_state_publisher',
-        executable='robot_state_publisher',
-        output='screen',
-        parameters=[{'robot_description': landmine_description,
-        'use_sim_time': True}], # add other parameters here if required
-        remappings=[
-            ('/robot_description','/mine_description')
-        ]
     )
     
     spawn = Node(package='gazebo_ros', executable='spawn_entity.py',
@@ -63,9 +48,8 @@ def generate_launch_description():
     # Run the node
     return LaunchDescription([
         gazebo,
-        node_robot_state_publisher,
-        node_landmine_state_publisher,
-        spawn
+        #node_robot_state_publisher,
+        #spawn
     ])
 
 

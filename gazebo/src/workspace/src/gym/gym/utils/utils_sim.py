@@ -21,6 +21,12 @@ class SimulationControl:
         if not self._reset_env_srv.wait_for_service(60):
             raise TimeoutError("Cannot connect to service: /reset_simulation")
         
+        self._reset_world_srv = self._node.create_client(Empty,"/reset_world")
+        
+        # wait 60 seconds for service ready
+        if not self._reset_world_srv.wait_for_service(60):
+            raise TimeoutError("Cannot connect to service: /reset_world")
+        
         self._pause_env_srv = self._node.create_client(Empty,"/pause_physics")
         
         # wait 60 seconds for service ready
@@ -37,12 +43,23 @@ class SimulationControl:
         '''
             Reset simulation
         '''    
-        future = self._reset_env_srv.call_async(Empty.Request())
+        self.pause()
+        
+        # future = self._reset_env_srv.call_async(Empty.Request())
+        
+        # while rclpy.ok():
+        #     rclpy.spin_once(self._node)
+        #     if future.done():
+        #         break
+            
+        future = self._reset_world_srv.call_async(Empty.Request())
         
         while rclpy.ok():
             rclpy.spin_once(self._node)
             if future.done():
                 break
+            
+        self.unpause()
         
     def pause(self):
         '''
