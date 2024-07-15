@@ -86,7 +86,11 @@ class KapiBaraStepAgent:
                 break
         
     
-    def __init__(self,parent_node:Node, max_linear_speed:float=None, max_angular_speed:float=None) -> None:
+    def __init__(self,parent_node:Node, max_linear_speed:float=None, max_angular_speed:float=None,position = [0.0]*3,rotation = [0.0]*3) -> None:
+        
+        # agent default positon and rotation
+        self.position = np.array(position).astype(np.float32)
+        self.rotation = np.array(rotation).astype(np.float32)
         
         self._node = parent_node
         
@@ -165,7 +169,7 @@ class KapiBaraStepAgent:
         
         self.remove_agent()
         
-        process = launch_other("spawn.robot")
+        process = launch_other("spawn.robot",x=str(self.position[0]),y=str(self.position[1]),z=str(self.position[2]),roll=str(self.rotation[0]),pitch=str(self.rotation[1]),yaw=str(self.rotation[2]))
         
         process.join()
         

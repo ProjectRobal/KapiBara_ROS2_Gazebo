@@ -6,6 +6,7 @@
   <author>Patryk Peroński</author>
   <description>A package used for control and maintance of KapiBara robots.</description>
   <license>TODO: License declaration</license>
+  <maintainer email="root@root.com">root</maintainer>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>ament_cmake_python</buildtool_depend>

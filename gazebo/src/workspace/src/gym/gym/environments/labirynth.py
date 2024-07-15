@@ -86,7 +86,7 @@ class Labirynth(gym.Env):
                 
         # create client for step control service for KapiBara robot
         
-        self._robot = KapiBaraStepAgent(self._node)
+        self._robot = KapiBaraStepAgent(self._node,rotation=[0.0,0.0,-1.57])
         
         # create client for service to control gazebo environment
         

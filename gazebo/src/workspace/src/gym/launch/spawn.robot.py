@@ -1,21 +1,53 @@
-import os
-import logging
-from ament_index_python.packages import get_package_share_directory,get_package_prefix
-from launch import LaunchDescription,substitutions
-from launch.actions import IncludeLaunchDescription,DeclareLaunchArgument,GroupAction
-from launch_ros.actions import PushRosNamespace
-from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch_xml.launch_description_sources import XMLLaunchDescriptionSource
+
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
 
 from launch_ros.actions import Node
-import xacro
 
-from launch.actions import SetEnvironmentVariable
 
 def generate_launch_description():
     
+    position_x = LaunchConfiguration('x')
+    position_y = LaunchConfiguration('y')
+    position_z = LaunchConfiguration('z')
+    
+    rot_roll = LaunchConfiguration('roll')
+    rot_pitch = LaunchConfiguration('pitch')
+    rot_yaw = LaunchConfiguration('yaw')
+    
+    position_x_arg = DeclareLaunchArgument(
+        'x',
+        default_value='0.0'
+    )
+    
+    position_y_arg = DeclareLaunchArgument(
+        'y',
+        default_value='0.0'
+    )
+    
+    position_z_arg = DeclareLaunchArgument(
+        'z',
+        default_value='0.0'
+    )
+    
+    position_roll_arg = DeclareLaunchArgument(
+        'roll',
+        default_value='0.0'
+    )
+    
+    position_pitch_arg = DeclareLaunchArgument(
+        'pitch',
+        default_value='0.0'
+    )
+    
+    position_yaw_arg = DeclareLaunchArgument(
+        'yaw',
+        default_value='0.0'
+    )
+   
     spawn = Node(package='gazebo_ros', executable='spawn_entity.py',
-                    arguments=["-topic","/robot_description","-entity","kapibara","-timeout","240","-Y","-1.57"],
+                    arguments=["-topic","/robot_description","-entity","kapibara","-timeout","240","-x",position_x,"-y",position_y,"-z",position_z,"-R",rot_roll,"-P",rot_pitch,"-Y",rot_yaw],
                     output='screen')
     
     diff_drive_spawner = Node(
@@ -44,6 +76,12 @@ def generate_launch_description():
             default_value=["debug"],
             description="Logging level",
       ),
+        position_x_arg,
+        position_y_arg,
+        position_z_arg,
+        position_roll_arg,
+        position_pitch_arg,
+        position_yaw_arg,
         spawn,
         diff_drive_spawner,
         joint_broad_spawner,

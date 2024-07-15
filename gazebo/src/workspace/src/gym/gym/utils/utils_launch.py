@@ -8,12 +8,14 @@ from multiprocessing import Process
 
 import os
 
-def launch(launch_path:str)->Process:
+def launch(launch_path:str,**kwargs)->Process:
     
     service = LaunchService()
     
     description = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([launch_path]))
+        launch_description_source = PythonLaunchDescriptionSource([launch_path]),
+        launch_arguments=kwargs.items(),
+        )
     
     service.include_launch_description(description)
     
@@ -23,14 +25,14 @@ def launch(launch_path:str)->Process:
     return process
     
 
-def launch_environment(env_name:str)->Process:
+def launch_environment(env_name:str,**kwargs)->Process:
     
     launch_file = os.path.join(get_package_share_directory("gym"),"launch/launch."+env_name+".py")
     
-    return launch(launch_file)
+    return launch(launch_file,**kwargs)
 
-def launch_other(launch_filename:str)->Process:
+def launch_other(launch_filename:str,**kwargs)->Process:
     
     launch_file = os.path.join(get_package_share_directory("gym"),"launch",launch_filename+".py")
     
-    return launch(launch_file)
+    return launch(launch_file,**kwargs)
