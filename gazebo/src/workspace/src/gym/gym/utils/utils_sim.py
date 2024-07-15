@@ -59,6 +59,8 @@ class SimulationControl:
             if future.done():
                 break
             
+        
+            
         self.unpause()
         
     def pause(self):

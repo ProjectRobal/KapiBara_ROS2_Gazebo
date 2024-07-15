@@ -19,6 +19,7 @@ motors:
     publish_rate: 50.0
 
     base_frame_id: base_link
+    odom_frame_id: odom
 
     left_wheel_names: ['wheel_left1_joint','wheel_left2_joint','wheel_left3_joint']
     right_wheel_names: ['wheel_right1_joint','wheel_right2_joint','wheel_right3_joint']
