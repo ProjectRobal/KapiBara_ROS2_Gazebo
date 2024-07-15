@@ -2,9 +2,9 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>kapibara_interfaces</name>
-  <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="patryk1-70@wp.pl">root</maintainer>
+  <version>0.8.0</version>
+  <author>Patryk Peroński</author>
+  <description>A set of services and messages used by KapiBara robot.</description>
   <license>TODO: License declaration</license>
 
   <buildtool_depend>rosidl_default_generators</buildtool_depend>

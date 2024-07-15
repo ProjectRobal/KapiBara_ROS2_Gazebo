@@ -2,14 +2,15 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>gym</name>
-  <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="root@todo.todo">root</maintainer>
+  <version>0.1.0</version>
+  <author>Patryk Peroński</author>
+  <description>A set of gymnasium envrionment in Gazebo.</description>
   <license>TODO: License declaration</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>ament_cmake_python</buildtool_depend>
 
+  <!-- <depend>protorl</depend>  -->
   <depend>rclcpp</depend>
   <depend>rclpy</depend>
   <depend>std_srvs</depend>
@@ -22,7 +23,6 @@
   <depend>kapibara</depend>
   <depend>python3-numpy</depend>
   <depend>python3-gymnasium-pip</depend>
-  <!-- <depend>protorl</depend> -->
 
   <depend>gazebo_ros_pkgs</depend>
   <depend>gazebo_ros2_control</depend>
