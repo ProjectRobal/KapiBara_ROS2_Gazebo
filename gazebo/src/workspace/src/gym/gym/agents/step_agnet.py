@@ -25,6 +25,10 @@ from nav_msgs.msg import Odometry
 
 from rosgraph_msgs.msg import Clock
 
+from gazebo_msgs.srv import DeleteEntity
+
+from gym.utils.utils_launch import launch_other
+
 class KapiBaraStepAgent:
     
     '''
@@ -68,6 +72,19 @@ class KapiBaraStepAgent:
         
         self._node.get_logger().debug("Got odometry!")
         
+    def remove_agent(self):
+        
+        request = DeleteEntity.Request()
+        
+        request.name = "kapibara"
+        
+        future = self._remove_agent.call_async(request)
+        
+        while rclpy.ok():
+            rclpy.spin_once(self._node)
+            if future.done():
+                break
+        
     
     def __init__(self,parent_node:Node, max_linear_speed:float=None, max_angular_speed:float=None) -> None:
         
@@ -84,6 +101,15 @@ class KapiBaraStepAgent:
             self._max_linear_speed = 1.0
         else:
             self._max_linear_speed = max_linear_speed
+            
+            
+        # create service client for agent removing        
+
+        self._remove_agent = self._node.create_client(DeleteEntity,"/delete_entity")
+        
+        # wait 60 seconds for service ready
+        if not self._remove_agent.wait_for_service(60):
+            raise TimeoutError("Cannot connect to service: /delete_entity")
         
         # creates subscription for laser sensors
         
@@ -131,6 +157,18 @@ class KapiBaraStepAgent:
         self.twist_output.publish(twist)
                 
         #rclpy.spin_once(self._node)
+        
+    def reset_agent(self):
+        '''
+            Remove agent entity from gazebo and spawn it once again.
+        '''
+        
+        self.remove_agent()
+        
+        process = launch_other("spawn.robot")
+        
+        process.join()
+        
         
     def wait_for_steps(self):
         self._step_count = 0

@@ -28,3 +28,9 @@ def launch_environment(env_name:str)->Process:
     launch_file = os.path.join(get_package_share_directory("gym"),"launch/launch."+env_name+".py")
     
     return launch(launch_file)
+
+def launch_other(launch_filename:str)->Process:
+    
+    launch_file = os.path.join(get_package_share_directory("gym"),"launch",launch_filename+".py")
+    
+    return launch(launch_file)

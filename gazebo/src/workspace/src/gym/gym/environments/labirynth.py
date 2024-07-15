@@ -111,6 +111,7 @@ class Labirynth(gym.Env):
         
         # reset gazebo
         self._sim.reset()
+        self._robot.reset_agent()
         
         self._robot_data = np.zeros(self._robot_data.shape,dtype = np.float32)
         self._trigger0_triggered = False
