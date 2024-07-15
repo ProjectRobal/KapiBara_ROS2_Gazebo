@@ -16,9 +16,19 @@
       </material>
     </visual>
     <collision name="front_bumper_collision">
+      <origin xyz="0.0 0.0 ${-$(arg depth)/2}" />
       <geometry>
-        <box size="$(arg width) $(arg height) 0.02"/>
+        <box size="$(arg width) $(arg height) 0.2"/>
       </geometry>
+
+    <!-- <surface>
+        <contact>
+          <collide_bitmask>0x0000</collide_bitmask>
+          <collide_without_contact>true</collide_without_contact>
+          <collide_without_contact_bitmask>0x0000</collide_without_contact_bitmask>
+        </contact>
+    </surface> -->
+
     </collision>
     <inertial>
       <mass value="1"/>
@@ -26,12 +36,18 @@
     </inertial>
   </link>
 
+  <gazebo>
+    <static>true</static>
+  </gazebo>
+
+
   <gazebo reference="mine_link">
     <material>Gazebo/Red</material>
-    <!-- <static>true</static> -->
+    <static>true</static>    
+    
     <sensor type="contact" name="contact_sensor">
       <always_on>true</always_on>
-      <update_rate>1</update_rate>
+      <update_rate>10</update_rate>
       <contact>
         <collision>mine_link_fixed_joint_lump__front_bumper_collision_collision</collision>
       </contact>

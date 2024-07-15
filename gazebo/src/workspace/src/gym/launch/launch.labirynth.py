@@ -65,7 +65,7 @@ def generate_launch_description():
                     output='screen')
     
     spawn_mine = Node(package='gazebo_ros', executable='spawn_entity.py',
-                    arguments=["-topic","/mine/robot_description","-entity","mine","-timeout","240","-x","-4.29","-y","4.22"],
+                    arguments=["-topic","/mine/robot_description","-entity","mine","-timeout","240","-x","0","-y","4.22","-z","0.4"],
                     output='screen')
     
     spawn_maze = Node(package='gazebo_ros', executable='spawn_entity.py',

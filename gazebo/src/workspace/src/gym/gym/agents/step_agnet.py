@@ -16,7 +16,7 @@ import numpy as np
 import rclpy
 from rclpy.node import Node
 
-from sensor_msgs.msg import Range,Imu
+from sensor_msgs.msg import Range,Imu,LaserScan
 
 from geometry_msgs.msg import Quaternion
 from geometry_msgs.msg import Twist
@@ -38,8 +38,13 @@ class KapiBaraStepAgent:
         
         self._node.get_logger().debug(f"Got frame: {self._step_count}")
     
-    def tof_callback(self,id,tof_msg:Range):
-        self._observations[id] = tof_msg.range
+    def tof_callback(self,id,tof_msg:LaserScan):
+        range = min(tof_msg.ranges)
+        
+        if range > tof_msg.range_max:
+            range = tof_msg.range_max
+        
+        self._observations[id] = range
         
         self._node.get_logger().debug(f"Got range id: {id}")
         
@@ -84,10 +89,10 @@ class KapiBaraStepAgent:
         
         self._tof_sub = []
         
-        self._tof_sub.append(self._node.create_subscription(Range,"/Gazebo/front_left",lambda msg: self.tof_callback(0,msg),10))
-        self._tof_sub.append(self._node.create_subscription(Range,"/Gazebo/front_right",lambda msg: self.tof_callback(1,msg),10))
-        self._tof_sub.append(self._node.create_subscription(Range,"/Gazebo/side_left",lambda msg: self.tof_callback(2,msg),10))
-        self._tof_sub.append(self._node.create_subscription(Range,"/Gazebo/side_right",lambda msg: self.tof_callback(3,msg),10))
+        self._tof_sub.append(self._node.create_subscription(LaserScan,"/Gazebo/front_left",lambda msg: self.tof_callback(0,msg),10))
+        self._tof_sub.append(self._node.create_subscription(LaserScan,"/Gazebo/front_right",lambda msg: self.tof_callback(1,msg),10))
+        self._tof_sub.append(self._node.create_subscription(LaserScan,"/Gazebo/side_left",lambda msg: self.tof_callback(2,msg),10))
+        self._tof_sub.append(self._node.create_subscription(LaserScan,"/Gazebo/side_right",lambda msg: self.tof_callback(3,msg),10))
                 
         # creates subscription for orientation
         

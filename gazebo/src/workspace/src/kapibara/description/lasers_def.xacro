@@ -36,13 +36,14 @@
                     <mean>0.0</mean>
                     <stddev>0.01</stddev>
             </noise>
+            <!-- <collision_bitmask>0x02</collision_bitmask> -->
             </ray>
             <plugin name="${sensor_name}_laserscan" filename="libgazebo_ros_ray_sensor.so">
                 <ros>
                 <namespace>Gazebo</namespace>
                 <remapping>~/out:=${sensor_name}</remapping>
                 </ros>
-                <output_type>sensor_msgs/Range</output_type>
+                <output_type>sensor_msgs/LaserScan</output_type>
                 <radiation_type>infrared</radiation_type>
                 <frame_name>${sensor_name}_laser</frame_name>
             </plugin>
