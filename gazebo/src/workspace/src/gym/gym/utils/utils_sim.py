@@ -45,12 +45,12 @@ class SimulationControl:
         '''    
         self.pause()
         
-        # future = self._reset_env_srv.call_async(Empty.Request())
+        future = self._reset_env_srv.call_async(Empty.Request())
         
-        # while rclpy.ok():
-        #     rclpy.spin_once(self._node)
-        #     if future.done():
-        #         break
+        while rclpy.ok():
+            rclpy.spin_once(self._node)
+            if future.done():
+                break
             
         future = self._reset_world_srv.call_async(Empty.Request())
         

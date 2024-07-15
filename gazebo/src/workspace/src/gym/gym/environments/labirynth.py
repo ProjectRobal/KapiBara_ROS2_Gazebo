@@ -39,13 +39,14 @@ class Labirynth(gym.Env):
         # Position of a target in labirynth
         target_high = np.array([np.inf,np.inf,np.inf],dtype=np.float32)
         
-        self.observation_space = spaces.Dict(
-            {
-                "robot": spaces.Box(low, high, dtype=np.float32),
-                "target": spaces.Box(-target_high, target_high, dtype=np.float32),
-            }
-        )
-
+        # self.observation_space = spaces.Dict(
+        #     {
+        #         "robot": spaces.Box(low, high, dtype=np.float32),
+        #         "target": spaces.Box(-target_high, target_high, dtype=np.float32),
+        #     }
+        # )
+        
+        self.observation_space = spaces.Box(low, high, dtype=np.float32)
         # We have 4 actions, corresponding to "right", "up", "left", "down"
         self.action_space = spaces.Discrete(4)
 
@@ -95,7 +96,7 @@ class Labirynth(gym.Env):
         self._sim.reset()
     
     def _get_obs(self):
-        return {"robot": self._robot_data, "target": self._target_data}
+        return self._robot_data
 
     
     def _get_info(self):
@@ -195,7 +196,7 @@ class Labirynth(gym.Env):
         
         self._last_robot_data = np.copy(self._robot_data)
 
-        return observation, reward, terminated, done, info
+        return self._get_obs(), reward, terminated, done, info
     
     def render(self):
         return None

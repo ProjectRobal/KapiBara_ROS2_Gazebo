@@ -7,6 +7,8 @@ cd /app/src
 
 sudo apt-get update
 
+rosdep update
+
 rosdep install --from-paths /app/src/workspace/src --ignore-src -r -y
 
 ros2 launch ./launch/launch.py

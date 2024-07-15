@@ -42,8 +42,8 @@ def generate_launch_description():
 
     # Run the node
     return LaunchDescription([
-        launch,
-        rviz
+        launch
+        #rviz
     ])
 
 

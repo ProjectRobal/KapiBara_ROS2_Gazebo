@@ -22,6 +22,7 @@
   <depend>kapibara</depend>
   <depend>python3-numpy</depend>
   <depend>python3-gymnasium-pip</depend>
+  <!-- <depend>protorl</depend> -->
 
   <depend>gazebo_ros_pkgs</depend>
   <depend>gazebo_ros2_control</depend>

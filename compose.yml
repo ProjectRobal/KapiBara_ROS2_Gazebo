@@ -20,6 +20,7 @@ services:
       - ./gazebo/commands/:/app/cmd
       - ./gazebo/dependencies/:/app/dep
       - ./gazebo/src:/app/src:rw
+      - ./gazebo/dependencies/rosdep_package.list:/etc/ros/rosdep/sources.list.d/20-default.list
       - /dev/shm:/dev/shm
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
 

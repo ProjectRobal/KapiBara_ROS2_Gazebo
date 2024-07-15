@@ -60,41 +60,13 @@ def generate_launch_description():
                 }.items()
         )
     
-    spawn = Node(package='gazebo_ros', executable='spawn_entity.py',
-                    arguments=["-topic","/robot_description","-entity","kapibara","-timeout","240","-Y","-1.57"],
-                    output='screen')
-    
     spawn_mine = Node(package='gazebo_ros', executable='spawn_entity.py',
-                    arguments=["-topic","/mine/robot_description","-entity","mine","-timeout","240","-x","0","-y","4.22","-z","0.4"],
+                    arguments=["-topic","/mine/robot_description","-entity","mine","-timeout","240","-x","-4.17","-y","4.22","-z","0.4"],
                     output='screen')
     
     spawn_maze = Node(package='gazebo_ros', executable='spawn_entity.py',
                     arguments=["-file",os.path.join(get_package_share_directory(pkg_name),"props/Simple_Maze/model.sdf"),"-entity","Maze","-timeout","240","-x","0.844","-y","4.16"],
                     output='screen')
-    
-    diff_drive_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["motors",'--controller-manager-timeout','240','--ros-args'],
-        output='screen',
-        emulate_tty=True    
-    )
-
-    joint_broad_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["joint_broad",'--controller-manager-timeout','240','--ros-args'],
-        output='screen',
-        emulate_tty=True
-    )
-    
-    ears_controller_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["ears_controller",'--controller-manager-timeout','240'],
-        output='screen',
-        emulate_tty=True
-    )
     
     fusion = Node(
         package="imu_filter_madgwick",
@@ -126,11 +98,7 @@ def generate_launch_description():
             ]
         ),
         spawn_maze,
-        spawn,
-        fusion,
-        diff_drive_spawner,
-        joint_broad_spawner,
-        ears_controller_spawner
+        fusion
     ])
 
 

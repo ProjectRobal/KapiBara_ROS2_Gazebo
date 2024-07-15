@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
 
+import gym
 from gym.environments.labirynth import Labirynth
+
+import gymnasium
 
 from random import randint
 
 def main():
-    env = Labirynth()
+    env = gymnasium.make("gym/SimpleMaze-v0")
+    
+    env.reset()
         
     while True:
-        # it doesn't work somehow
-        observation, reward, terminated, done, info = env.step(0)
+                
+        observation, reward, terminated, done, info = env.step(env.action_space.sample())
         
         print("Observation: ",observation)
         print("Reward: ",reward)
@@ -19,7 +24,6 @@ def main():
         
         if terminated:
             env.reset()
-        #env.step(0)
 
 
 if __name__ == "__main__":
