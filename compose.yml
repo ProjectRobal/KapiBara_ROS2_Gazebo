@@ -17,6 +17,7 @@ services:
     env_file:
       - ./gazebo/env/env
     volumes:
+      - ./gazebo/entrypoint.sh:/entrypoint.sh:rwx
       - ./gazebo/commands/:/app/cmd
       - ./gazebo/dependencies/:/app/dep
       - ./gazebo/src:/app/src:rw

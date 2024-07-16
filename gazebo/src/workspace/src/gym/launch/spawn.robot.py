@@ -1,12 +1,18 @@
+import os
 
+from ament_index_python.packages import get_package_share_directory,get_package_prefix
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 
 from launch_ros.actions import Node
 
+from launch.actions import SetEnvironmentVariable
+
 
 def generate_launch_description():
+    
+    gazebo_env = SetEnvironmentVariable("GAZEBO_MODEL_PATH", os.path.join(get_package_prefix("kapibara"), "share"))
     
     position_x = LaunchConfiguration('x')
     position_y = LaunchConfiguration('y')

@@ -19,10 +19,10 @@ RUN mkdir -p /app/cmd
 
 RUN mkdir -p /app/src/workspace
 
-COPY --chmod=755 ./entrypoint.sh /entrypoint.sh
+#COPY --chmod=755 ./entrypoint.sh /entrypoint.sh
 
 
-RUN chmod a+x ./entrypoint.sh
+#RUN chmod a+x ./entrypoint.sh
 RUN chmod -R a+x /app/cmd
 
 CMD [ "./entrypoint.sh" ]

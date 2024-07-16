@@ -7,7 +7,9 @@ cd /app/src
 
 sudo apt-get update
 
-rosdep update
+pip3 install ./workspace/src/ProtoRL
+
+# rosdep update
 
 rosdep install --from-paths /app/src/workspace/src --ignore-src -r -y -q
 

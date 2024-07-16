@@ -57,6 +57,7 @@ def generate_launch_description():
             launch_arguments={
                 'world': os.path.join(get_package_share_directory(pkg_name),'worlds/world.sdf'),
                 'params_file': os.path.join(get_package_share_directory(pkg_name),"config/gazebo.yaml")
+                # 'verbose': 'true'
                 }.items()
         )
     
