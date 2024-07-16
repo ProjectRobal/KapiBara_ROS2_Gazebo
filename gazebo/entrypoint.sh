@@ -7,10 +7,10 @@ cd /app/src
 
 sudo apt-get update
 
-pip3 install ./workspace/src/ProtoRL
-
 # rosdep update
 
 rosdep install --from-paths /app/src/workspace/src --ignore-src -r -y -q
+
+python3 -m pip install -e ./workspace/src/ProtoRL
 
 ros2 launch ./launch/launch.py
