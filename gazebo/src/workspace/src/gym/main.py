@@ -58,7 +58,7 @@ def main():
     agent = Agent(dqn_actor, dqn_learner, prioritized=use_prioritization)
     sample_mode = 'prioritized' if use_prioritization else 'uniform'
     ep_loop = EpisodeLoop(agent, env, memory, sample_mode=sample_mode,
-                          prioritized=use_prioritization)
+                          prioritized=use_prioritization,load_checkpoint = False)
     scores, steps_array = ep_loop.run(n_games)
 
 # def main():

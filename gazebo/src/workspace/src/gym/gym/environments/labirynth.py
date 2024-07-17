@@ -86,7 +86,7 @@ class Labirynth(gym.Env):
                 
         # create client for step control service for KapiBara robot
         
-        self._robot = KapiBaraStepAgent(self._node,rotation=[0.0,0.0,-1.57])
+        self._robot = KapiBaraStepAgent(self._node,position=[0.0,0.16,0.0],rotation=[0.0,0.0,-1.57])
         
         # create client for service to control gazebo environment
         
@@ -96,7 +96,7 @@ class Labirynth(gym.Env):
         self._sim.reset()
     
     def _get_obs(self):
-        return self._robot_data
+        return self._robot_data[:11]
 
     
     def _get_info(self):
@@ -125,10 +125,7 @@ class Labirynth(gym.Env):
     # that doesn't work as it should
     def step(self, action):
         # Map the action (element of {0,1,2,3}) to the direction we walk in
-        if action == 1:
-            self._move_backward_count += 1
-        else:
-            self._move_backward_count = 0
+        
         
         self._robot.move(action)
         self._sim.unpause()
@@ -169,7 +166,14 @@ class Labirynth(gym.Env):
                 reward = -0.25
                 self._node.get_logger().info("Robot sticks to wall!")
                 break
-                
+        
+        # if self._robot_data[11] < 0.15:
+        #     reward = -0.75
+        #     self._node.get_logger().info("Robot hits the wall, terminated!")
+        #     terminated = True
+        # elif self._robot_data[11] < 0.3:
+        #     reward = -0.25
+        #     self._node.get_logger().info("Robot sticks to wall!")
                 
         # check if robot moved backward
         
@@ -177,11 +181,10 @@ class Labirynth(gym.Env):
         #         self._robot_data[8:11] - self._last_robot_data[8:11], ord=1
         #     )
         
-        if self._move_backward_count > 5:
+        if action == 1:
             self._node.get_logger().info(f"Robot moved backward!")
             # self._node.get_logger().info(f"Robot position: {self._robot_data[8:11]}, Robot last position: {self._last_robot_data[8:11]}")
             reward = -0.25
-            self._move_backward_count = 0
                 
         info = self._get_info()
                 

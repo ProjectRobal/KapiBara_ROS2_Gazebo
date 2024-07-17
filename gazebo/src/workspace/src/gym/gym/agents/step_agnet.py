@@ -94,7 +94,7 @@ class KapiBaraStepAgent:
         
         self._node = parent_node
         
-        self._observations = np.zeros(11,dtype=np.float32)
+        self._observations = np.zeros(12,dtype=np.float32)
         
         if max_angular_speed is None:
             self._max_angular_speed = 1.0
@@ -123,6 +123,7 @@ class KapiBaraStepAgent:
         self._tof_sub.append(self._node.create_subscription(LaserScan,"/Gazebo/front_right",lambda msg: self.tof_callback(1,msg),10))
         self._tof_sub.append(self._node.create_subscription(LaserScan,"/Gazebo/side_left",lambda msg: self.tof_callback(2,msg),10))
         self._tof_sub.append(self._node.create_subscription(LaserScan,"/Gazebo/side_right",lambda msg: self.tof_callback(3,msg),10))
+        self._tof_sub.append(self._node.create_subscription(LaserScan,"/Gazebo/floor",lambda msg: self.tof_callback(11,msg),10))
                 
         # creates subscription for orientation
         
