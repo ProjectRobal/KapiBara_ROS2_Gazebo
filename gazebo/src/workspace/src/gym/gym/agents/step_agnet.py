@@ -170,9 +170,23 @@ class KapiBaraStepAgent:
         
         self.remove_agent()
         
-        process = launch_other("spawn.robot",x=str(self.position[0]),y=str(self.position[1]),z=str(self.position[2]),roll=str(self.rotation[0]),pitch=str(self.rotation[1]),yaw=str(self.rotation[2]))
+        reseted_succesfuly=False
         
-        process.join()
+        while not reseted_succesfuly:
+            self._node.get_logger().info("Attempting to reset robot")
+        
+            process = launch_other("spawn.robot",x=str(self.position[0]),y=str(self.position[1]),z=str(self.position[2]),roll=str(self.rotation[0]),pitch=str(self.rotation[1]),yaw=str(self.rotation[2]))
+            
+            process.start()
+            
+            process.join(timeout=3.0)
+            
+            if process.exitcode is None or process.exitcode != 0:
+                self._node.get_logger().info("Failed to reset robot, trying again!")
+                process.kill()
+            else:
+                reseted_succesfuly = True
+                self._node.get_logger().info("Robot restarted succesfully")
         
         
     def wait_for_steps(self):

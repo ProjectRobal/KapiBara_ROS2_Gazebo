@@ -27,7 +27,7 @@ def main():
     use_double = False
     use_dueling = False
     use_atari = False
-    env = make_env(env_name, use_atari=use_atari)
+    env = make_env(env_name, maze = 'normal')
     n_games = 1500
     bs = 64
     # 0.3, 0.5 works okay for cartpole

@@ -1,3 +1,4 @@
+from typing import Literal
 import numpy as np
 
 import gymnasium as gym
@@ -20,12 +21,14 @@ import time
 class Labirynth(gym.Env):
     metadata = {"render_modes": ["human"]}
     
+    MAZE_LIST = Literal["basic","normal"]
+    
     def trigger0_callback(self,contacts:ContactsState):
         for contact in contacts.states:
             if contact.collision1_name.find("kapibara") > -1 or contact.collision2_name.find("kapibara") > -1:
                 self._trigger0_triggered = True
     
-    def __init__(self, render_mode=None):
+    def __init__(self, render_mode=None , maze: Literal[MAZE_LIST] = 'basic'):
 
         # Observations are dictionaries with the agent's and the target's location.
         # Each location is encoded as an element of {0, ..., `size`}^2, i.e. MultiDiscrete([size, size]).
@@ -79,15 +82,19 @@ class Labirynth(gym.Env):
         #self._spin_thread = Thread(target=rclpy.spin,args=(self._node,))
         #self._spin_thread.start()
         # Start an Gazbo using proper launch file
-        
-        self._env = launch_environment("labirynth")
+        if maze == 'basic':
+            self._env = launch_environment("labirynth")
+        elif maze == 'normal':
+            self._env = launch_environment("labirynth.big")
+        self._env.start()
         
         self._trigger0_topic = self._node.create_subscription(ContactsState,"/trigger0",self.trigger0_callback,10)
                 
         # create client for step control service for KapiBara robot
-        
-        self._robot = KapiBaraStepAgent(self._node,position=[0.0,0.16,0.0],rotation=[0.0,0.0,-1.57])
-        
+        if maze == 'basic':
+            self._robot = KapiBaraStepAgent(self._node,position=[0.0,0.20,0.0],rotation=[0.0,0.0,-1.57])
+        elif maze == 'normal':
+            self._robot = KapiBaraStepAgent(self._node,position=[0.0,0.0,0.0],rotation=[0.0,0.0,0])
         # create client for service to control gazebo environment
         
         self._sim = SimulationControl(self._node)
@@ -111,7 +118,9 @@ class Labirynth(gym.Env):
         super().reset(seed=seed)
         
         # reset gazebo
+        self._node.get_logger().info("Resetting simulation")
         self._sim.reset()
+        self._node.get_logger().info("Resetting robot")
         self._robot.reset_agent()
         
         self._robot_data = np.zeros(self._robot_data.shape,dtype = np.float32)
@@ -146,7 +155,7 @@ class Labirynth(gym.Env):
         #
         # Each step will give reward -0.04
         # Moving backwards will give -0.25
-        # It will get 1.0 for reaching it is goal, hiting a squre
+        # It will get 1.0 for reaching it is goal, hiting a sqaure
         # When robot is too near a wall it will get -0.25
         #
         # When robot hits the wall the environment is terminated
@@ -155,25 +164,19 @@ class Labirynth(gym.Env):
         reward = -0.04
         
         # check sensor data
-        
+        id = 0
         for distance in self._robot_data[0:4]:
-            if distance < 0.15:
-                reward = -0.75
-                self._node.get_logger().info("Robot hits the wall, terminated!")
+            id+=1
+            if distance < 0.1:
+                reward = -1.0
+                self._node.get_logger().info(f"Robot hits the wall, terminated!, sensor id: {id}")
                 terminated = True
                 break
-            elif distance < 0.3:
-                reward = -0.25
-                self._node.get_logger().info("Robot sticks to wall!")
+            elif distance < 0.35:
+                reward = -0.5
+                self._node.get_logger().info(f"Robot sticks to wall!, sensor id: {id}")
                 break
-        
-        # if self._robot_data[11] < 0.15:
-        #     reward = -0.75
-        #     self._node.get_logger().info("Robot hits the wall, terminated!")
-        #     terminated = True
-        # elif self._robot_data[11] < 0.3:
-        #     reward = -0.25
-        #     self._node.get_logger().info("Robot sticks to wall!")
+    
                 
         # check if robot moved backward
         
@@ -185,6 +188,15 @@ class Labirynth(gym.Env):
             self._node.get_logger().info(f"Robot moved backward!")
             # self._node.get_logger().info(f"Robot position: {self._robot_data[8:11]}, Robot last position: {self._last_robot_data[8:11]}")
             reward = -0.25
+            
+        if action == 1:
+            if self._robot_data[11] < 0.1:
+                reward = -1.0
+                self._node.get_logger().info("Robot hits the wall, terminated!, back sensor!")
+                terminated = True
+            elif self._robot_data[11] < 0.35:
+                reward = -0.5
+                self._node.get_logger().info("Robot sticks to wall!, back sensor!")
                 
         info = self._get_info()
                 

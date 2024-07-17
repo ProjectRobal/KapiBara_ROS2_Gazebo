@@ -62,11 +62,11 @@ def generate_launch_description():
         )
     
     spawn_mine = Node(package='gazebo_ros', executable='spawn_entity.py',
-                    arguments=["-topic","/mine/robot_description","-entity","mine","-timeout","240","-x","-2.33314","-y","2.493129","-z","0.4"],
+                    arguments=["-topic","/mine/robot_description","-entity","mine","-timeout","240","-x","-2.761051","-y","3.045406","-z","0.4"],
                     output='screen')
     
     spawn_maze = Node(package='gazebo_ros', executable='spawn_entity.py',
-                    arguments=["-file",os.path.join(get_package_share_directory(pkg_name),"props/Maze_Small_Simple/model.sdf"),"-entity","Maze","-timeout","240","-x","0","-y","0"],
+                    arguments=["-file",os.path.join(get_package_share_directory(pkg_name),"props/Test_Maze/model.sdf"),"-entity","Maze","-timeout","240","-x","-3.330718","-y","-0.470162"],
                     output='screen')
     
     fusion = Node(
