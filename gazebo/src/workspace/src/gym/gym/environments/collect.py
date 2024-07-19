@@ -18,17 +18,15 @@ from threading import Thread
 
 import time
 
-class Labirynth(gym.Env):
+class Collect(gym.Env):
     metadata = {"render_modes": ["human"]}
-    
-    MAZE_LIST = Literal["basic","normal"]
-    
+        
     def trigger0_callback(self,contacts:ContactsState):
         for contact in contacts.states:
             if contact.collision1_name.find("kapibara") > -1 or contact.collision2_name.find("kapibara") > -1:
                 self._trigger0_triggered = True
     
-    def __init__(self, render_mode=None , maze: Literal[MAZE_LIST] = 'basic'):
+    def __init__(self, render_mode=None):
 
         # Observations are dictionaries with the agent's and the target's location.
         # Each location is encoded as an element of {0, ..., `size`}^2, i.e. MultiDiscrete([size, size]).
@@ -82,19 +80,13 @@ class Labirynth(gym.Env):
         #self._spin_thread = Thread(target=rclpy.spin,args=(self._node,))
         #self._spin_thread.start()
         # Start an Gazbo using proper launch file
-        if maze == 'basic':
-            self._env = launch_environment("labirynth")
-        elif maze == 'normal':
-            self._env = launch_environment("labirynth.big")
+        self._env = launch_environment("collect.one")
         self._env.start()
         
         self._trigger0_topic = self._node.create_subscription(ContactsState,"/trigger0",self.trigger0_callback,10)
                 
         # create client for step control service for KapiBara robot
-        if maze == 'basic':
-            self._robot = KapiBaraStepAgent(self._node,position=[0.0,0.20,0.0],rotation=[0.0,0.0,-1.57])
-        elif maze == 'normal':
-            self._robot = KapiBaraStepAgent(self._node,position=[0.0,0.035,0.0],rotation=[0.0,0.0,0])
+        self._robot = KapiBaraStepAgent(self._node,position=[0.0,0.0,0.0],rotation=[0.0,0.0,0])
         # create client for service to control gazebo environment
         
         self._sim = SimulationControl(self._node)

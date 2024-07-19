@@ -51,7 +51,7 @@
       <contact>
         <collision>mine_link_fixed_joint_lump__front_bumper_collision_collision</collision>
       </contact>
-      <plugin name="bumper_plugin" filename="libgazebo_ros_bumper.so">
+      <plugin name="bumper_plugin_$(arg topic)" filename="libgazebo_ros_bumper.so">
           <alwaysOn>true</alwaysOn>
           <frameName>mine_link</frameName>
           <ros>

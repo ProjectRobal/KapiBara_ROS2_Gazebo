@@ -5,3 +5,8 @@ register(
      entry_point="gym.environments.labirynth:Labirynth",
      kwargs={'maze': 'basic'}
 )
+
+register(
+     id="gym/PackCollect-v0",
+     entry_point="gym.environments.collect:Collect"
+)

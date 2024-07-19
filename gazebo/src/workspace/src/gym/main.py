@@ -21,13 +21,16 @@ def main():
     if not os.path.exists("./models"):
         os.mkdir("./models")
     
-    env_name = 'gym/SimpleMaze-v0'
+    env_name = 'gym/PackCollect-v0'
     # env_name = 'PongNoFrameskip-v4'
     use_prioritization = True
     use_double = False
     use_dueling = False
     use_atari = False
-    env = make_env(env_name, maze = 'normal')
+    env = make_env(env_name)
+    
+    while True:
+        pass
     n_games = 1500
     bs = 64
     # 0.3, 0.5 works okay for cartpole
