@@ -16,36 +16,39 @@ from gym.utils.utils_sim import SimulationControl
 
 from threading import Thread
 
-import time
+from copy import copy
 
 class Collect(gym.Env):
     metadata = {"render_modes": ["human"]}
+    
+    point_positions = [
+        np.array([-1.86847, 2.12847]),
+        np.array([0.109086, -1.9246]),
+        np.array([-3.04748, -3.18496]),
+        np.array([-4.68853, 2.104755])
+    ]
         
-    def trigger0_callback(self,contacts:ContactsState):
+    def point_callback(self,contacts:ContactsState):
         for contact in contacts.states:
-            if contact.collision1_name.find("kapibara") > -1 or contact.collision2_name.find("kapibara") > -1:
-                self._trigger0_triggered = True
+            if contact.collision1_name.find("kapibara") > -1:
+                self._point_id_triggered = contact.collision2_name.split("::")[0]
+                return
+            if contact.collision2_name.find("kapibara") > -1:
+                self._point_id_triggered = contact.collision1_name.split("::")[0]
+                return
     
     def __init__(self, render_mode=None):
 
         # Observations are dictionaries with the agent's and the target's location.
         # Each location is encoded as an element of {0, ..., `size`}^2, i.e. MultiDiscrete([size, size]).
-        # Inputs are 4 laser sensors distance, quanterion , position
+        # Inputs are 4 laser sensors distance, quanterion
         
-        high = np.array([1.0,1.0,1.0,1.0 , 1.0,1.0,1.0,1.0 , np.inf,np.inf,np.inf ],dtype=np.float32)
-        low = np.array([0.0,0.0,0.0,0.0 , -1.0,-1.0,-1.0,-1.0 , -np.inf,-np.inf,-np.inf ],dtype=np.float32)
+        high = np.array([1.0,1.0,1.0,1.0 , 1.0,1.0,1.0,1.0 ],dtype=np.float32)
+        low = np.array([0.0,0.0,0.0,0.0 , -1.0,-1.0,-1.0,-1.0 ],dtype=np.float32)
         
-        self._trigger0_triggered = False
+        self._point_id_triggered = ""
         
-        # Position of a target in labirynth
-        target_high = np.array([np.inf,np.inf,np.inf],dtype=np.float32)
-        
-        # self.observation_space = spaces.Dict(
-        #     {
-        #         "robot": spaces.Box(low, high, dtype=np.float32),
-        #         "target": spaces.Box(-target_high, target_high, dtype=np.float32),
-        #     }
-        # )
+        self._point_collected = 0
         
         self.observation_space = spaces.Box(low, high, dtype=np.float32)
         # We have 4 actions, corresponding to "right", "up", "left", "down"
@@ -67,10 +70,6 @@ class Collect(gym.Env):
         
         self._robot_data = np.zeros(high.shape,dtype = np.float32)
         self._last_robot_data = self._robot_data
-        self._move_backward_count = 0
-        
-        # since target is immovable the position is constant for entire simulation
-        self._target_data = np.array([-4.290007,4.220005,0.499995],dtype=np.float32)
         
         rclpy.init()
 
@@ -82,11 +81,16 @@ class Collect(gym.Env):
         # Start an Gazbo using proper launch file
         self._env = launch_environment("collect.one")
         self._env.start()
+                
+        self._point_topics = {}
         
-        self._trigger0_topic = self._node.create_subscription(ContactsState,"/trigger0",self.trigger0_callback,10)
+        for i in range(len(self.point_positions)):
+            self._node.get_logger().info(f"Created subscription for point{i}")
+            self._point_topics["point"+str(i)]=self._node.create_subscription(ContactsState,"/trigger"+str(i),self.point_callback,10)
+        
                 
         # create client for step control service for KapiBara robot
-        self._robot = KapiBaraStepAgent(self._node,position=[0.0,0.0,0.0],rotation=[0.0,0.0,0])
+        self._robot = KapiBaraStepAgent(self._node,position=[0.0,0.0,0.0],rotation=[0.0,0.0,0],reload_agent=False)
         # create client for service to control gazebo environment
         
         self._sim = SimulationControl(self._node)
@@ -95,14 +99,12 @@ class Collect(gym.Env):
         self._sim.reset()
     
     def _get_obs(self):
-        return self._robot_data[:11]
+        return self._robot_data[:8]
 
     
     def _get_info(self):
+        # get information of distance between robot and all points
         return {
-            "distance": np.linalg.norm(
-                self._robot_data[8:11] - self._target_data, ord=1
-            )
         }
         
     def reset(self, seed=None, options=None):
@@ -116,7 +118,7 @@ class Collect(gym.Env):
         self._robot.reset_agent()
         
         self._robot_data = np.zeros(self._robot_data.shape,dtype = np.float32)
-        self._trigger0_triggered = False
+        self._point_id_triggered = ""
 
         observation = self._get_obs()
         info = self._get_info()
@@ -142,15 +144,15 @@ class Collect(gym.Env):
         
         # An episode is done iff the agent has reached the target
         terminated = False
+        done = False
         
         # We want agent to do as few steps as possible
         #
         # Each step will give reward -0.04
-        # Moving backwards will give -0.25
-        # It will get 1.0 for reaching it is goal, hiting a sqaure
-        # When robot is too near a wall it will get -0.25
-        #
-        # When robot hits the wall the environment is terminated
+        # It will get 1.0 for reaching it is goal, finding all points
+        # It will get 0.5 for finding one point
+        # When robot hits the wall it will get -0.5 reward and environment is terminated
+        
         
         # default reward for every step
         reward = -0.04
@@ -160,49 +162,34 @@ class Collect(gym.Env):
         for distance in self._robot_data[0:4]:
             id+=1
             if distance < 0.1:
-                reward = -1.0
+                reward = -0.5
                 self._node.get_logger().info(f"Robot hits the wall, terminated!, sensor id: {id}")
                 terminated = True
                 break
-            elif distance < 0.35:
-                reward = -0.5
-                self._node.get_logger().info(f"Robot sticks to wall!, sensor id: {id}")
-                break
-    
-                
-        # check if robot moved backward
-        
-        # d_distance = np.linalg.norm(
-        #         self._robot_data[8:11] - self._last_robot_data[8:11], ord=1
-        #     )
-        
-        if action == 1:
-            self._node.get_logger().info(f"Robot moved backward!")
-            # self._node.get_logger().info(f"Robot position: {self._robot_data[8:11]}, Robot last position: {self._last_robot_data[8:11]}")
-            reward = -0.25
-            
+
         if action == 1:
             if self._robot_data[11] < 0.1:
-                reward = -1.0
+                reward = -0.5
                 self._node.get_logger().info("Robot hits the wall, terminated!, back sensor!")
                 terminated = True
-            elif self._robot_data[11] < 0.35:
-                reward = -0.5
-                self._node.get_logger().info("Robot sticks to wall!, back sensor!")
                 
         info = self._get_info()
                 
-        if self._trigger0_triggered:
+        if len(self._point_id_triggered) > 0 :
+            self._point_collected +=1
+            reward = 0.5
+            self._node.get_logger().info("Robot found a point"+self._point_id_triggered)
+            
+            self._sim.remove_entity(self._point_id_triggered)
+            
+            del self._point_topics[self._point_id_triggered]
+                        
+            self._point_id_triggered = ""
+         
+        if self._point_collected == len(self.point_positions):
             done = True
-            self._trigger0_triggered = False
             reward = 1.0
-        else:
-            done = False
-        
-        # check if robot reached end of the maze
-        
-        self._last_robot_data = np.copy(self._robot_data)
-
+                
         return self._get_obs(), reward, terminated, done, info
     
     def render(self):

@@ -15,7 +15,7 @@
         <color rgba="1 0 0 1"/>
       </material>
     </visual>
-    <collision name="front_bumper_collision">
+    <collision name="front_bumper_collision_$(arg topic)">
       <origin xyz="0.0 0.0 ${-$(arg depth)/2}" />
       <geometry>
         <box size="$(arg width) $(arg height) 0.2"/>
@@ -49,7 +49,7 @@
       <always_on>true</always_on>
       <update_rate>10</update_rate>
       <contact>
-        <collision>mine_link_fixed_joint_lump__front_bumper_collision_collision</collision>
+        <collision>mine_link_fixed_joint_lump__front_bumper_collision_$(arg topic)_collision</collision>
       </contact>
       <plugin name="bumper_plugin_$(arg topic)" filename="libgazebo_ros_bumper.so">
           <alwaysOn>true</alwaysOn>

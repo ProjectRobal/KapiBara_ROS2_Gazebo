@@ -86,11 +86,14 @@ class KapiBaraStepAgent:
                 break
         
     
-    def __init__(self,parent_node:Node, max_linear_speed:float=None, max_angular_speed:float=None,position = [0.0]*3,rotation = [0.0]*3) -> None:
+    def __init__(self,parent_node:Node, max_linear_speed:float=None, max_angular_speed:float=None,position = [0.0]*3,rotation = [0.0]*3,reload_agent=True) -> None:
         
         # agent default positon and rotation
         self.position = np.array(position).astype(np.float32)
         self.rotation = np.array(rotation).astype(np.float32)
+        
+        self.reload_agent = reload_agent
+        self._robot_spawned = False
         
         self._node = parent_node
         
@@ -168,6 +171,9 @@ class KapiBaraStepAgent:
             Remove agent entity from gazebo and spawn it once again.
         '''
         
+        if not self.reload_agent and self._robot_spawned:
+            return
+            
         self.remove_agent()
         
         reseted_succesfuly=False
@@ -187,6 +193,7 @@ class KapiBaraStepAgent:
             else:
                 reseted_succesfuly = True
                 self._node.get_logger().info("Robot restarted succesfully")
+                self._robot_spawned = True
         
         
     def wait_for_steps(self):

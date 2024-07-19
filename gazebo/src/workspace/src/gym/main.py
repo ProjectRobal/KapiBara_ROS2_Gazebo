@@ -29,8 +29,6 @@ def main():
     use_atari = False
     env = make_env(env_name)
     
-    while True:
-        pass
     n_games = 1500
     bs = 64
     # 0.3, 0.5 works okay for cartpole
