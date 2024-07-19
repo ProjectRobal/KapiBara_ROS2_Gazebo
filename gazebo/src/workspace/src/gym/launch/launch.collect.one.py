@@ -2,7 +2,7 @@ import os
 import logging
 from ament_index_python.packages import get_package_share_directory,get_package_prefix
 from launch import LaunchDescription,substitutions
-from launch.actions import IncludeLaunchDescription,DeclareLaunchArgument,GroupAction
+from launch.actions import IncludeLaunchDescription,DeclareLaunchArgument,GroupAction,OpaqueFunction
 from launch_ros.actions import PushRosNamespace
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_xml.launch_description_sources import XMLLaunchDescriptionSource
@@ -11,6 +11,8 @@ from launch_ros.actions import Node
 import xacro
 
 from launch.actions import SetEnvironmentVariable
+
+from launch.substitutions import LaunchConfiguration
 
 '''
  
@@ -34,9 +36,31 @@ POINTS_POSITIONS=[
     (-4.68853, 2.104755, 0.4)
     ]
 
-def generate_launch_description():
+launch_args =[
+    DeclareLaunchArgument(
+            "log_level",
+            default_value=["debug"],
+            description="Logging level",
+    ),
+    DeclareLaunchArgument(
+        'points',
+        default_value=''
+    )
+]
 
-    logger = substitutions.LaunchConfiguration("log_level")
+def launch_setup(context):
+    logger = substitutions.LaunchConfiguration("log_level").perform(context)
+    
+    point_positions = LaunchConfiguration('points').perform(context)
+    
+    # points in format x1 y1,x2 y2,x3 y3,x4 y4     
+    points = point_positions.split(",")    
+    point_coords = []
+    
+    for point in points:
+        coords = point.split()
+        
+        point_coords.append((float(coords[0]),float(coords[1])))
     
     # Specify the name of the package and path to xacro file within the package
     pkg_name = 'gym'
@@ -90,7 +114,7 @@ def generate_launch_description():
     
     actions = []
     
-    for i,(x,y,z) in enumerate(POINTS_POSITIONS):
+    for i,(x,y) in enumerate(point_coords):
         landmine_description = xacro.process_file(xacro_file,mappings={'topic' : 'trigger'+str(i)}).toxml()
         
         node_landmine_state_publisher = Node(
@@ -102,7 +126,7 @@ def generate_launch_description():
         )
         
         spawn_mine = Node(package='gazebo_ros', executable='spawn_entity.py',
-                    arguments=["-topic",f"/point{i}/robot_description","-entity","point"+str(i),"-timeout","240","-x",str(x),"-y",str(y),"-z",str(z)],
+                    arguments=["-topic",f"/point{i}/robot_description","-entity","point"+str(i),"-timeout","240","-x",str(x),"-y",str(y),"-z","0.4"],
                     output='screen')
         actions.append(GroupAction(
             actions=[
@@ -112,19 +136,15 @@ def generate_launch_description():
             ]
         ))
 
+    return [node_robot_state_publisher,gazebo,spawn_maze,*actions,fusion]
+
+def generate_launch_description():
+    opfunc = OpaqueFunction(function = launch_setup)
     
     # Run the node
-    return LaunchDescription([
-        DeclareLaunchArgument(
-            "log_level",
-            default_value=["debug"],
-            description="Logging level",
-      ),
-        gazebo,
-        node_robot_state_publisher,
-        *actions,
-        spawn_maze,
-        fusion
-    ])
+    desc = LaunchDescription(launch_args)
+    desc.add_action(opfunc)
+    
+    return desc
 
 

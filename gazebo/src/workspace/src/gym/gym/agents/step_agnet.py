@@ -13,6 +13,8 @@
 
 import numpy as np
 
+import base64
+
 import rclpy
 from rclpy.node import Node
 
@@ -21,13 +23,19 @@ from sensor_msgs.msg import Range,Imu,LaserScan
 from geometry_msgs.msg import Quaternion
 from geometry_msgs.msg import Twist
 
+from sensor_msgs.msg import CompressedImage
+
 from nav_msgs.msg import Odometry
 
 from rosgraph_msgs.msg import Clock
 
 from gazebo_msgs.srv import DeleteEntity
 
+from PIL import Image
+
 from gym.utils.utils_launch import launch_other
+
+import io
 
 class KapiBaraStepAgent:
     
@@ -84,9 +92,41 @@ class KapiBaraStepAgent:
             rclpy.spin_once(self._node)
             if future.done():
                 break
+            
+    def camera_listener(self, msg:CompressedImage):
+        self._node.get_logger().debug('I got image with format: %s' % msg.format)
         
+        #image_buffer=(b"data:image/png;base64,"+base64.b64encode())
+        
+        image = Image.open(io.BytesIO(msg.data))
+        
+        image = image.resize((40,30)).convert(mode="RGB")
+        
+        last_frame = np.asarray(image).astype(np.float32)/256.0
+        
+        if len(self.frames)>10:
+            del self.frames[0]
+        
+        self.frames.append(last_frame.reshape(40*30*3))
     
-    def __init__(self,parent_node:Node, max_linear_speed:float=None, max_angular_speed:float=None,position = [0.0]*3,rotation = [0.0]*3,reload_agent=True) -> None:
+    def init_camera(self):
+        
+        self.frames = []
+        
+        self.subscription = self._node.create_subscription(
+            CompressedImage,
+            "/KapiBara/camera/image_raw/compressed",
+            self.camera_listener,
+            10)
+        
+    def get_camera_frame(self):
+        
+        if len(self.frames) == 0:
+            return [np.zeros(40*30*3)]
+        
+        return self.frames
+    
+    def __init__(self,parent_node:Node, max_linear_speed:float=None, max_angular_speed:float=None,position = [0.0]*3,rotation = [0.0]*3,reload_agent=True,use_camera=False) -> None:
         
         # agent default positon and rotation
         self.position = np.array(position).astype(np.float32)
@@ -149,6 +189,9 @@ class KapiBaraStepAgent:
         
         # step counter
         self._step_counter = self._node.create_subscription(Clock,"/clock",self.clock_step_counter,qos_profile=self._step_counter_qos)
+        
+        if use_camera:
+            self.init_camera()
 
         
     def move(self,direction):

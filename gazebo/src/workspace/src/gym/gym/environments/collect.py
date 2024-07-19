@@ -43,8 +43,11 @@ class Collect(gym.Env):
         # Each location is encoded as an element of {0, ..., `size`}^2, i.e. MultiDiscrete([size, size]).
         # Inputs are 4 laser sensors distance, quanterion
         
-        high = np.array([1.0,1.0,1.0,1.0 , 1.0,1.0,1.0,1.0 ],dtype=np.float32)
-        low = np.array([0.0,0.0,0.0,0.0 , -1.0,-1.0,-1.0,-1.0 ],dtype=np.float32)
+        high = np.array([1.0,1.0,1.0,1.0 , 1.0,1.0,1.0,1.0 , *([1.0]*40*30*3) ],dtype=np.float32)
+        low = np.array([0.0,0.0,0.0,0.0 , -1.0,-1.0,-1.0,-1.0 , *([0.0]*40*30*3)],dtype=np.float32)
+        
+        
+        print("High shape: ",high.shape)
         
         self._point_id_triggered = ""
         
@@ -75,11 +78,20 @@ class Collect(gym.Env):
 
         self._node=Node("maze_env")
         
+        points=""
+        
+        points+=f"{self.point_positions[0][0]} {self.point_positions[0][1]}"
+        
+        for point in self.point_positions[1:]:
+            points+=f",{point[0]} {point[1]}"
+            
+        print(points)
+        
         # run spin in seaparated thread
         #self._spin_thread = Thread(target=rclpy.spin,args=(self._node,))
         #self._spin_thread.start()
         # Start an Gazbo using proper launch file
-        self._env = launch_environment("collect.one")
+        self._env = launch_environment("collect.one",points=points)
         self._env.start()
                 
         self._point_topics = {}
@@ -90,7 +102,7 @@ class Collect(gym.Env):
         
                 
         # create client for step control service for KapiBara robot
-        self._robot = KapiBaraStepAgent(self._node,position=[0.0,0.0,0.0],rotation=[0.0,0.0,0],reload_agent=False)
+        self._robot = KapiBaraStepAgent(self._node,position=[0.0,0.0,0.0],rotation=[0.0,0.0,0],reload_agent=False,use_camera=True)
         # create client for service to control gazebo environment
         
         self._sim = SimulationControl(self._node)
@@ -99,13 +111,20 @@ class Collect(gym.Env):
         self._sim.reset()
     
     def _get_obs(self):
-        return self._robot_data[:8]
+        return self._robot_data
 
-    
     def _get_info(self):
-        # get information of distance between robot and all points
-        return {
-        }
+        position = self._robot_data[8:10]
+        
+        if len(position) < 2:
+            return {}
+        
+        output = []
+        
+        for point in self.point_positions:
+            output.append(np.linalg.norm(point - position))
+        # get information distance from obstacltes:
+        return {"distances_to_points":output}
         
     def reset(self, seed=None, options=None):
         # We need the following line to seed self.np_random
@@ -139,7 +158,12 @@ class Collect(gym.Env):
         
         observation = self._robot.get_observations()
         
-        self._robot_data = observation
+        frame = self._robot.get_camera_frame()[-1]
+        
+        self._robot_data[:8] = observation[:8]
+        self._robot_data[8:] = frame[:]
+        
+        #print(self._robot_data.shape)
         # We use `np.clip` to make sure we don't leave the grid
         
         # An episode is done iff the agent has reached the target
@@ -152,7 +176,6 @@ class Collect(gym.Env):
         # It will get 1.0 for reaching it is goal, finding all points
         # It will get 0.5 for finding one point
         # When robot hits the wall it will get -0.5 reward and environment is terminated
-        
         
         # default reward for every step
         reward = -0.04
@@ -167,11 +190,10 @@ class Collect(gym.Env):
                 terminated = True
                 break
 
-        if action == 1:
-            if self._robot_data[11] < 0.1:
-                reward = -0.5
-                self._node.get_logger().info("Robot hits the wall, terminated!, back sensor!")
-                terminated = True
+        # if self._robot_data[11] < 0.1:
+        #     reward = -0.5
+        #     self._node.get_logger().info("Robot hits the wall, terminated!, back sensor!")
+        #     terminated = True
                 
         info = self._get_info()
                 
