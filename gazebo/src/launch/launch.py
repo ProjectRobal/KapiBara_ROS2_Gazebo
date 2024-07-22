@@ -11,6 +11,8 @@ import xacro
 from launch.actions import SetEnvironmentVariable
 
 def generate_launch_description():
+    
+    
 
     # Specify the name of the package and path to xacro file within the package
     # pkg_name = 'kapibara'

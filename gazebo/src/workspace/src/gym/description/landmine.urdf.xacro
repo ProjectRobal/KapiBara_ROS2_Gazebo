@@ -5,6 +5,7 @@
   <xacro:arg name="height" default="1" />
   <xacro:arg name="depth" default="1" />
   <xacro:arg name="topic" default="trigger0" />
+  <xacro:arg name="color" default="Red" />
 
   <link name="mine_link">
     <visual>
@@ -42,7 +43,7 @@
 
 
   <gazebo reference="mine_link">
-    <material>Gazebo/Red</material>
+    <material>Gazebo/$(arg color)</material>
     <static>true</static>    
 
     <sensor type="contact" name="contact_sensor">

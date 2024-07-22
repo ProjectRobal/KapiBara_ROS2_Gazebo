@@ -10,3 +10,8 @@ register(
      id="gym/PackCollect-v0",
      entry_point="gym.environments.collect:Collect"
 )
+
+register(
+     id="gym/Parking-v0",
+     entry_point="gym.environments.parking:Parking"
+)
