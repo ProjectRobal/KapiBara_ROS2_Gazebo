@@ -95,7 +95,7 @@ def launch_setup(context):
     actions = []
     
     for i,(x,y) in enumerate(POINTS_POSITIONS):
-        landmine_description = xacro.process_file(xacro_file,mappings={'topic' : 'trigger'+str(i), 'width' : '0.5', 'height' : '0.5'}).toxml()
+        landmine_description = xacro.process_file(xacro_file,mappings={'topic' : 'trigger'+str(i), 'width' : '0.5', 'height' : '0.5',"color" : "Green"}).toxml()
         
         node_landmine_state_publisher = Node(
         package='robot_state_publisher',

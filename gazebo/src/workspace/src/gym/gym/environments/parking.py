@@ -20,6 +20,8 @@ from copy import copy
 
 class Parking(gym.Env):
     metadata = {"render_modes": ["human"]}
+    
+    stages = ["searching","parking"]
         
     def point_callback(self,contacts:ContactsState):
         for contact in contacts.states:
@@ -43,9 +45,7 @@ class Parking(gym.Env):
         print("High shape: ",high.shape)
         
         self._point_id_triggered = ""
-        
-        self._point_collected = 0
-        
+                
         self.observation_space = spaces.Box(low, high, dtype=np.float32)
         # We have 4 actions, corresponding to "right", "up", "left", "down"
         self.action_space = spaces.Discrete(4)
@@ -67,6 +67,8 @@ class Parking(gym.Env):
         self._robot_data = np.zeros(high.shape,dtype = np.float32)
         self._last_robot_data = self._robot_data
         
+        self._stage_number = 0
+        
         rclpy.init()
 
         self._node=Node("maze_env")
@@ -86,7 +88,7 @@ class Parking(gym.Env):
         
                 
         # create client for step control service for KapiBara robot
-        self._robot = KapiBaraStepAgent(self._node,position=[0.0,0.0,0.0],rotation=[0.0,0.0,0],reload_agent=False,use_camera=False)
+        self._robot = KapiBaraStepAgent(self._node,position=[-0.2,0.0,0.0],rotation=[0.0,0.0,0],reload_agent=False,use_camera=False)
         # create client for service to control gazebo environment
         
         self._sim = SimulationControl(self._node)
@@ -98,15 +100,9 @@ class Parking(gym.Env):
         return self._robot_data
 
     def _get_info(self):
-        position = self._robot_data[8:10]
         
-        if len(position) < 2:
-            return {}
-        
-        output = []
-
-        # get information distance from obstacltes:
-        return {}
+        # get information abut stage:
+        return {"stage":self.stages[self._stage_number]}
         
     def reset(self, seed=None, options=None):
         # We need the following line to seed self.np_random
@@ -119,7 +115,11 @@ class Parking(gym.Env):
         self._robot.reset_agent()
         
         self._robot_data = np.zeros(self._robot_data.shape,dtype = np.float32)
+        
+        self._stage_number = 0
         self._point_id_triggered = ""
+        
+        del self._point_topics
 
         observation = self._get_obs()
         info = self._get_info()
@@ -129,6 +129,18 @@ class Parking(gym.Env):
     # that doesn't work as it should
     def step(self, action):
         # Map the action (element of {0,1,2,3}) to the direction we walk in
+        
+        if not hasattr(self,"_point_topics"):
+            self._point_topics = {}
+            
+            for i in range(2):
+                self._node.get_logger().info(f"Created subscription for point{i}")
+                self._point_topics["point"+str(i)]=self._node.create_subscription(ContactsState,"/trigger"+str(i),self.point_callback,10)
+                
+            rclpy.spin_once(self._node)
+            self._point_id_triggered = ""
+            
+            
         
         
         self._robot.move(action)
@@ -152,22 +164,12 @@ class Parking(gym.Env):
         # We want agent to do as few steps as possible
         #
         # Each step will give reward -0.04
-        # It will get 1.0 for reaching it is goal, finding all points
-        # It will get 0.5 for finding one point
-        # When robot hits the wall it will get -0.5 reward and environment is terminated
+        # Robot should stick to a wall so it will get -0.25 for moving away from it and 
+        # It will get 1.0 for find proper parking spot
+        # It will get -1.0 for hitting wall and environment is terminated
+        # When robot park properly simulation finish and robot recive 1.0
         
-        # default reward for every step
-        reward = -0.04
-        
-        # check sensor data
-        id = 0
-        for distance in self._robot_data[0:4]:
-            id+=1
-            if distance < 0.1:
-                reward = -0.5
-                self._node.get_logger().info(f"Robot hits the wall, terminated!, sensor id: {id}")
-                terminated = True
-                break
+                
 
         # if self._robot_data[11] < 0.1:
         #     reward = -0.5
@@ -175,19 +177,62 @@ class Parking(gym.Env):
         #     terminated = True
                 
         info = self._get_info()
-                
-        if len(self._point_id_triggered) > 0 :
-            self._point_collected +=1
-            reward = 0.5
-            self._node.get_logger().info("Robot found a point"+self._point_id_triggered)
-            
-            self._sim.remove_entity(self._point_id_triggered)
-            
-            del self._point_topics[self._point_id_triggered]
-                        
-            self._point_id_triggered = ""
-         
         
+        reward = -0.04
+        
+        if self._stage_number == 0:
+            
+            if min(observation[2],observation[3]) > 0.4:
+                reward = -0.25
+                
+            if len(self._point_id_triggered) > 0 :
+                reward = 1.0
+                self._node.get_logger().info("Robot found a proper parking spot! "+self._point_id_triggered)
+                
+                #self._sim.remove_entity(self._point_id_triggered)
+                
+                del self._point_topics[self._point_id_triggered]
+                            
+                self._point_id_triggered = ""
+                
+                self._stage_number = 1
+                
+            id = 0
+            for distance in observation[0:4]:
+                id+=1
+                if distance < 0.1:
+                    reward = -1.0
+                    self._node.get_logger().info(f"Robot hits the wall, terminated!, sensor id: {id}")
+                    terminated = True
+                    break
+        else:
+            # robot parked properly!
+            dist = abs(observation[2] - observation[3])
+            self._node.get_logger().info("Robot parking spot size: "+str(dist))
+            if dist <= 0.2:
+                reward = 1.0
+                self._node.get_logger().info("Robot has parked properly!")
+                done = True
+            
+            id = 0
+            for distance in observation[0:2]:
+                id+=1
+                if distance < 0.1:
+                    reward = -1.0
+                    self._node.get_logger().info(f"Robot hits the wall, terminated!, sensor id: {id}")
+                    terminated = True
+                    break
+                
+        # check sensor data
+        
+        
+        if observation[11] < 0.1:
+            reward = - 1.0
+            self._node.get_logger().info("Robot hits the wall, terminated!, back sensor!")
+            terminated = True
+            
+        self._node.get_logger().info("Reward: "+str(reward))
+         
                 
         return self._get_obs(), reward, terminated, done, info
     
