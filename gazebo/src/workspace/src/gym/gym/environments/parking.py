@@ -18,6 +18,8 @@ from threading import Thread
 
 from copy import copy
 
+from timeit import default_timer as timer
+
 class Parking(gym.Env):
     metadata = {"render_modes": ["human"]}
     
@@ -43,6 +45,8 @@ class Parking(gym.Env):
         
         
         print("High shape: ",high.shape)
+        
+        self._stall_timer = timer()
         
         self._point_id_triggered = ""
                 
@@ -88,7 +92,7 @@ class Parking(gym.Env):
         
                 
         # create client for step control service for KapiBara robot
-        self._robot = KapiBaraStepAgent(self._node,position=[-0.2,0.0,0.0],rotation=[0.0,0.0,0],reload_agent=False,use_camera=False)
+        self._robot = KapiBaraStepAgent(self._node,position=[-0.2,0.0,0.0],rotation=[0.0,0.0,0],reload_agent=False,use_camera=False,max_linear_speed=0.25)
         # create client for service to control gazebo environment
         
         self._sim = SimulationControl(self._node)
@@ -123,6 +127,8 @@ class Parking(gym.Env):
 
         observation = self._get_obs()
         info = self._get_info()
+        
+        self._stall_timer = timer()
 
         return observation, info
     
@@ -178,9 +184,8 @@ class Parking(gym.Env):
                 
         info = self._get_info()
         
-        reward = -0.04
-        
         if self._stage_number == 0:
+            reward = -0.04
             
             if min(observation[2],observation[3]) > 0.4:
                 reward = -0.25
@@ -191,7 +196,7 @@ class Parking(gym.Env):
                 
                 #self._sim.remove_entity(self._point_id_triggered)
                 
-                del self._point_topics[self._point_id_triggered]
+                #del self._point_topics[self._point_id_triggered]
                             
                 self._point_id_triggered = ""
                 
@@ -206,14 +211,21 @@ class Parking(gym.Env):
                     terminated = True
                     break
         else:
+            reward = -0.25
             # robot parked properly!
             dist = abs(observation[2] - observation[3])
             self._node.get_logger().info("Robot parking spot size: "+str(dist))
-            if dist <= 0.2:
+            
+            if dist <= 0.1 and observation[2]<0.3 and observation[3]<0.3:
                 reward = 1.0
                 self._node.get_logger().info("Robot has parked properly!")
                 done = True
-            
+                
+            # if len(self._point_id_triggered) == 0 :
+            #     reward = -1.0
+            #     terminated = True
+            #     self._node.get_logger().info("Robot has escaped from parking!")
+                
             id = 0
             for distance in observation[0:2]:
                 id+=1
@@ -231,7 +243,13 @@ class Parking(gym.Env):
             self._node.get_logger().info("Robot hits the wall, terminated!, back sensor!")
             terminated = True
             
+        if timer() - self._stall_timer > 60*2:
+            terminated =  True
+            reward = -2.0
+            self._stall_timer = timer()
+            
         self._node.get_logger().info("Reward: "+str(reward))
+        self._node.get_logger().info("Observations: "+str(observation))
          
                 
         return self._get_obs(), reward, terminated, done, info
