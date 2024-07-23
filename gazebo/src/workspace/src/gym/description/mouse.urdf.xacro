@@ -1,0 +1,143 @@
+<?xml version="1.0"?>
+<robot name="differential_drive_robot">
+
+  <!-- Link Definitions -->
+  <link name="base_link">
+    <inertial>
+      <mass value="1.0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="0.1" ixy="0.0" ixz="0.0" iyy="0.1" iyz="0.0" izz="0.1"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <box size="0.5 0.3 0.1"/>
+      </geometry>
+      <material name="blue"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.5 0.3 0.1"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="left_wheel_link">
+    <inertial>
+      <mass value="0.2"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="0.02" ixy="0.0" ixz="0.0" iyy="0.02" iyz="0.0" izz="0.02"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <cylinder length="0.1" radius="0.05"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder length="0.1" radius="0.05"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="right_wheel_link">
+    <inertial>
+      <mass value="0.2"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="0.02" ixy="0.0" ixz="0.0" iyy="0.02" iyz="0.0" izz="0.02"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <cylinder length="0.1" radius="0.05"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder length="0.1" radius="0.05"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="caster_wheel_link">
+    <inertial>
+      <mass value="0.1"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.05"/>
+      </geometry>
+      <material name="grey"/>
+    </visual>
+    <collision>
+      <geometry>
+        <sphere radius="0.05"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- Joint Definitions -->
+  <joint name="left_wheel_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="left_wheel_link"/>
+    <origin xyz="-0.25 0.15 0"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+
+  <joint name="right_wheel_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="right_wheel_link"/>
+    <origin xyz="-0.25 -0.15 0"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+
+  <joint name="caster_wheel_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="caster_wheel_link"/>
+    <origin xyz="0.25 0 0"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+
+  <!-- ros2_control Configuration -->
+  <ros2_control name="DifferentialDriveController" type="system">
+    <hardware>
+      <plugin>ros2_control_components/DiffDrive</plugin>
+      <param name="wheel_radius">0.05</param>
+      <param name="track_width">0.3</param>
+      <joint name="left_wheel_joint">
+        <param name="motor_command_interface">velocity</param>
+        <param name="state_interface">velocity</param>
+      </joint>
+      <joint name="right_wheel_joint">
+        <param name="motor_command_interface">velocity</param>
+        <param name="state_interface">velocity</param>
+      </joint>
+    </hardware>
+
+    <controller name="mouse_joint_state" type="joint_state_controller/JointStateController">
+      <param name="publish_rate">50</param>
+    </controller>
+
+    <controller name="mouse_motors" type="diff_drive_controller/DiffDriveController">
+      <param name="left_wheel_names">left_wheel_joint</param>
+      <param name="right_wheel_names">right_wheel_joint</param>
+      <param name="cmd_vel_timeout">0.5</param>
+      <param name="base_frame_id">base_link</param>
+      <param name="odom_frame_id">odom</param>
+      <param name="publish_rate">50</param>
+      <param name="wheel_separation">0.3</param>
+      <param name="wheel_radius">0.05</param>
+    </controller>
+  </ros2_control>
+
+  <!-- Gazebo Configuration -->
+  <gazebo>
+    <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
+      <robot_namespace>/</robot_namespace>
+    </plugin>
+  </gazebo>
+  
+
+</robot>
