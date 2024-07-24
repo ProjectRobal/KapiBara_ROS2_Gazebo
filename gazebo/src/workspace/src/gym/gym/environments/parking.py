@@ -245,9 +245,10 @@ class Parking(gym.Env):
             self._node.get_logger().info("Robot hits the wall, terminated!, back sensor!")
             terminated = True
             
-        if timer() - self._stall_timer > 60*2:
+        if timer() - self._stall_timer > 60:
             terminated =  True
             reward = -2.0
+            self._node.get_logger().info("Robot timed out!")
             self._stall_timer = timer()
             
         self._node.get_logger().info("Reward: "+str(reward))
