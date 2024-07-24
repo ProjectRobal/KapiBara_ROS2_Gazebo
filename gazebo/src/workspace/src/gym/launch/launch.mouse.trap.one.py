@@ -32,10 +32,7 @@ def launch_setup(context):
     robot_pkg_name = "kapibara"
     file_subpath = 'description/kapibara.urdf.xacro'
 
-    # Use xacro to process the file
-    xacro_file = os.path.join(get_package_share_directory(robot_pkg_name),file_subpath)
-    robot_description_raw = xacro.process_file(xacro_file,mappings={'sim_mode' : 'true'}).toxml()    
-    
+    # Use xacro to process the file    
     xacro_file = os.path.join(get_package_share_directory(pkg_name),'description/mouse.urdf.xacro')
     
     gazebo_env = SetEnvironmentVariable("GAZEBO_MODEL_PATH", os.path.join(get_package_prefix("kapibara"), "share"))
@@ -60,7 +57,7 @@ def launch_setup(context):
         )
     
     spawn_maze = Node(package='gazebo_ros', executable='spawn_entity.py',
-                    arguments=["-file",os.path.join(get_package_share_directory(pkg_name),"props/Parking_1/model.sdf"),"-entity","Parking","-timeout","240"],
+                    arguments=["-file",os.path.join(get_package_share_directory(pkg_name),"props/Predator1/model.sdf"),"-entity","Maze","-timeout","240"],
                     output='screen')
     
     actions = []
@@ -76,7 +73,7 @@ def launch_setup(context):
     )
     
     spawn_mouse = Node(package='gazebo_ros', executable='spawn_entity.py',
-                arguments=["-topic",f"/robot_description","-entity","mouse","-timeout","240"],
+                arguments=["-topic",f"/mouse/robot_description","-entity","stefan","-timeout","240"],
                 output='screen')
     
     diff_drive_spawner = Node(
@@ -91,17 +88,17 @@ def launch_setup(context):
         arguments=["mouse_joint_state",'--controller-manager-timeout','240','--ros-args']
     )
     
-    # actions.append(GroupAction(
-    #     actions=[
-    #         PushRosNamespace('mouse'),
-            
-    #     ]
-    # ))
-
-    return [gazebo,spawn_maze,mouse_state_publisher,
+    actions.append(GroupAction(
+        actions=[
+            PushRosNamespace('mouse'),
+            mouse_state_publisher,
             spawn_mouse,
             diff_drive_spawner,
-            joint_broad_spawner]
+            joint_broad_spawner
+        ]
+    ))
+
+    return [gazebo,spawn_maze,*actions]
 
 def generate_launch_description():
     opfunc = OpaqueFunction(function = launch_setup)

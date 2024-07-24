@@ -1,4 +1,4 @@
-controller_manager:
+mouse/controller_manager:
   ros__parameters:
     update_rate: 1000
 
@@ -8,7 +8,7 @@ controller_manager:
     mouse_joint_state:
       type: joint_state_broadcaster/JointStateBroadcaster
 
-mouse_motors:
+mouse/mouse_motors:
   ros__parameters:
 
     publish_rate: 50.0

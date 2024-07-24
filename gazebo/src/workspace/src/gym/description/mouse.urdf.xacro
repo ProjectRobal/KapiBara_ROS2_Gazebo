@@ -131,11 +131,11 @@
 
   <!-- Gazebo Configuration -->
   <gazebo>
-    <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
+    <plugin name="$(arg name)_gazebo_ros2_control" filename="libgazebo_ros2_control.so">
       <ros>
-        <!-- <namespace>/$(arg name)</namespace> -->
+        <namespace>/$(arg name)</namespace>
       </ros>
-      <!-- <robot_param_node>/$(arg name)/robot_state_publisher</robot_param_node> -->
+      <robot_param_node>/$(arg name)/robot_state_publisher</robot_param_node>
       <parameters>$(find gym)/config/my_controllers.yaml</parameters>
     </plugin>
   </gazebo>
