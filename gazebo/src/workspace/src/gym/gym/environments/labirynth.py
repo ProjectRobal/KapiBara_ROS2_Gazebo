@@ -28,14 +28,14 @@ class Labirynth(gym.Env):
             if contact.collision1_name.find("kapibara") > -1 or contact.collision2_name.find("kapibara") > -1:
                 self._trigger0_triggered = True
     
-    def __init__(self, render_mode=None , maze: Literal[MAZE_LIST] = 'basic'):
+    def __init__(self, render_mode=None , maze: Literal[MAZE_LIST] = 'basic',sequence_length=1):
 
         # Observations are dictionaries with the agent's and the target's location.
         # Each location is encoded as an element of {0, ..., `size`}^2, i.e. MultiDiscrete([size, size]).
         # Inputs are 4 laser sensors distance, quanterion , position
         
-        high = np.array([1.0,1.0,1.0,1.0 , 1.0,1.0,1.0,1.0 , np.inf,np.inf,np.inf ],dtype=np.float32)
-        low = np.array([0.0,0.0,0.0,0.0 , -1.0,-1.0,-1.0,-1.0 , -np.inf,-np.inf,-np.inf ],dtype=np.float32)
+        high = np.array([1.0,1.0,1.0,1.0 , 1.0,1.0,1.0,1.0 , np.inf,np.inf,np.inf ]*sequence_length,dtype=np.float32)
+        low = np.array([0.0,0.0,0.0,0.0 , -1.0,-1.0,-1.0,-1.0 , -np.inf,-np.inf,-np.inf ]*sequence_length,dtype=np.float32)
         
         self._trigger0_triggered = False
         
@@ -103,7 +103,7 @@ class Labirynth(gym.Env):
         self._sim.reset()
     
     def _get_obs(self):
-        return self._robot_data[:11]
+        return self._robot_data
 
     
     def _get_info(self):
@@ -131,6 +131,10 @@ class Labirynth(gym.Env):
 
         return observation, info
     
+    def append_observations(self,observation):
+        self._robot_data = np.roll(self._robot_data,-len(observation))    
+        self._robot_data[-len(observation):] = observation[:]
+    
     # that doesn't work as it should
     def step(self, action):
         # Map the action (element of {0,1,2,3}) to the direction we walk in
@@ -144,8 +148,8 @@ class Labirynth(gym.Env):
         self._sim.pause()
         
         observation = self._robot.get_observations()
-        
-        self._robot_data = observation
+                
+        self.append_observations(observation[:11])
         # We use `np.clip` to make sure we don't leave the grid
         
         # An episode is done iff the agent has reached the target
@@ -165,7 +169,7 @@ class Labirynth(gym.Env):
         
         # check sensor data
         id = 0
-        for distance in self._robot_data[0:4]:
+        for distance in observation[0:4]:
             id+=1
             if distance < 0.1:
                 reward = -1.0
@@ -190,11 +194,11 @@ class Labirynth(gym.Env):
             reward = -0.25
             
         if action == 1:
-            if self._robot_data[11] < 0.1:
+            if observation[11] < 0.1:
                 reward = -1.0
                 self._node.get_logger().info("Robot hits the wall, terminated!, back sensor!")
                 terminated = True
-            elif self._robot_data[11] < 0.35:
+            elif observation[11] < 0.35:
                 reward = -0.5
                 self._node.get_logger().info("Robot sticks to wall!, back sensor!")
                 

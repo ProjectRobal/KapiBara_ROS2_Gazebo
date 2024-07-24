@@ -34,14 +34,14 @@ class Parking(gym.Env):
                 self._point_id_triggered = contact.collision1_name.split("::")[0]
                 return
     
-    def __init__(self, render_mode=None):
+    def __init__(self, render_mode=None,sequence_length=1):
 
         # Observations are dictionaries with the agent's and the target's location.
         # Each location is encoded as an element of {0, ..., `size`}^2, i.e. MultiDiscrete([size, size]).
         # Inputs are 4 laser sensors distance, quanterion
         
-        high = np.array([1.0,1.0,1.0,1.0 , 1.0,1.0,1.0,1.0  ],dtype=np.float32)
-        low = np.array([0.0,0.0,0.0,0.0 , -1.0,-1.0,-1.0,-1.0 ],dtype=np.float32)
+        high = np.array([1.0,1.0,1.0,1.0 , 1.0,1.0,1.0,1.0  ]*sequence_length,dtype=np.float32)
+        low = np.array([0.0,0.0,0.0,0.0 , -1.0,-1.0,-1.0,-1.0 ]*sequence_length,dtype=np.float32)
         
         
         print("High shape: ",high.shape)
@@ -69,7 +69,6 @@ class Parking(gym.Env):
         self.render_mode = render_mode
         
         self._robot_data = np.zeros(high.shape,dtype = np.float32)
-        self._last_robot_data = self._robot_data
         
         self._stage_number = 0
         
@@ -132,7 +131,10 @@ class Parking(gym.Env):
 
         return observation, info
     
-    # that doesn't work as it should
+    def append_observations(self,observation):
+        self._robot_data = np.roll(self._robot_data,-len(observation))    
+        self._robot_data[-len(observation):] = observation[:]
+    
     def step(self, action):
         # Map the action (element of {0,1,2,3}) to the direction we walk in
         
@@ -157,8 +159,8 @@ class Parking(gym.Env):
         self._sim.pause()
         
         observation = self._robot.get_observations()
-                
-        self._robot_data[:8] = observation[:8]
+                        
+        self.append_observations(observation[:8])
         
         #print(self._robot_data.shape)
         # We use `np.clip` to make sure we don't leave the grid
