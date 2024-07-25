@@ -105,6 +105,25 @@
     <axis xyz="0 0 1"/>
   </joint>
 
+  <joint name="front_laser_joint" type="fixed">
+        <parent link="base_link"/>
+        <child link="front_laser_link"/>
+        <origin xyz="-0.25 0.0 0.04" rpy="0 0 ${pi}"/>
+    </joint>
+
+    <link name="front_laser_link">
+        <visual>
+            <geometry>
+                <box size="0.01 0.01 0.01" />
+            </geometry>
+            <material name="red" />
+        </visual>
+    </link>
+
+  <xacro:include filename="lasers_def.xacro" />
+
+  <xacro:laser_sensor sensor_name="front" name="$(arg name)" />
+
   <!-- <joint name="caster_wheel_joint" type="continuous">
     <parent link="base_link"/>
     <child link="caster_wheel_link"/>
