@@ -18,16 +18,9 @@ from threading import Thread
 
 from copy import copy
 
-class Collect(gym.Env):
+class Catch(gym.Env):
     metadata = {"render_modes": ["human"]}
     
-    point_positions = [
-        np.array([-1.86847, 2.12847]),
-        np.array([0.109086, -1.9246]),
-        np.array([-3.04748, -3.18496]),
-        np.array([-4.68853, 2.104755])
-    ]
-        
     def point_callback(self,contacts:ContactsState):
         for contact in contacts.states:
             if contact.collision1_name.find("kapibara") > -1:
@@ -77,32 +70,24 @@ class Collect(gym.Env):
         rclpy.init()
 
         self._node=Node("maze_env")
-        
-        points=""
-        
-        points+=f"{self.point_positions[0][0]} {self.point_positions[0][1]}"
-        
-        for point in self.point_positions[1:]:
-            points+=f",{point[0]} {point[1]}"
-            
-        print(points)
+    
         
         # run spin in seaparated thread
         #self._spin_thread = Thread(target=rclpy.spin,args=(self._node,))
         #self._spin_thread.start()
         # Start an Gazbo using proper launch file
-        self._env = launch_environment("collect.one",points=points)
+        self._env = launch_environment("mouse.trap.one")
         self._env.start()
                 
-        self._point_topics = {}
+        # self._point_topics = {}
         
-        for i in range(len(self.point_positions)):
-            self._node.get_logger().info(f"Created subscription for point{i}")
-            self._point_topics["point"+str(i)]=self._node.create_subscription(ContactsState,"/trigger"+str(i),self.point_callback,10)
+        # for i in range(len(self.point_positions)):
+        #     self._node.get_logger().info(f"Created subscription for point{i}")
+        #     self._point_topics["point"+str(i)]=self._node.create_subscription(ContactsState,"/trigger"+str(i),self.point_callback,10)
         
                 
         # create client for step control service for KapiBara robot
-        self._robot = KapiBaraStepAgent(self._node,position=[0.0,0.0,0.0],rotation=[0.0,0.0,0],reload_agent=False,use_camera=True)
+        self._robot = KapiBaraStepAgent(self._node,position=[-1.0,0.0,0.0],rotation=[0.0,0.0,0],reload_agent=False,use_camera=True)
         # create client for service to control gazebo environment
         
         self._sim = SimulationControl(self._node)
@@ -114,17 +99,8 @@ class Collect(gym.Env):
         return self._robot_data
 
     def _get_info(self):
-        position = self._robot_data[8:10]
-        
-        if len(position) < 2:
-            return {}
-        
-        output = []
-        
-        for point in self.point_positions:
-            output.append(np.linalg.norm(point - position))
         # get information distance from obstacltes:
-        return {"distances_to_points":output}
+        return {}
         
     def reset(self, seed=None, options=None):
         # We need the following line to seed self.np_random
@@ -202,21 +178,7 @@ class Collect(gym.Env):
         #     terminated = True
                 
         info = self._get_info()
-                
-        if len(self._point_id_triggered) > 0 :
-            self._point_collected +=1
-            reward = 0.5
-            self._node.get_logger().info("Robot found a point"+self._point_id_triggered)
             
-            self._sim.remove_entity(self._point_id_triggered)
-            
-            del self._point_topics[self._point_id_triggered]
-                        
-            self._point_id_triggered = ""
-         
-        if self._point_collected == len(self.point_positions):
-            done = True
-            reward = 1.0
                 
         return self._get_obs(), reward, terminated, done, info
     

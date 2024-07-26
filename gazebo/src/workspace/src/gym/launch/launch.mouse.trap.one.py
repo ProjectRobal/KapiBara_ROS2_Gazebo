@@ -32,19 +32,23 @@ def launch_setup(context):
     robot_pkg_name = "kapibara"
     file_subpath = 'description/kapibara.urdf.xacro'
 
+    # Use xacro to process the file
+    xacro_file = os.path.join(get_package_share_directory(robot_pkg_name),file_subpath)
+    robot_description_raw = xacro.process_file(xacro_file,mappings={'sim_mode' : 'true'}).toxml()    
+    
+    node_robot_state_publisher = Node(
+        package='robot_state_publisher',
+        executable='robot_state_publisher',
+        output='screen',
+        parameters=[{'robot_description': robot_description_raw,
+        'use_sim_time': True}] # add other parameters here if required
+    )
+
     # Use xacro to process the file    
     xacro_file = os.path.join(get_package_share_directory(pkg_name),'description/mouse.urdf.xacro')
     
     gazebo_env = SetEnvironmentVariable("GAZEBO_MODEL_PATH", os.path.join(get_package_prefix("kapibara"), "share"))
 
-    # Configure the node
-    # node_robot_state_publisher = Node(
-    #     package='robot_state_publisher',
-    #     executable='robot_state_publisher',
-    #     output='screen',
-    #     parameters=[{'robot_description': robot_description_raw,
-    #     'use_sim_time': True}] # add other parameters here if required
-    # )
     
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
@@ -69,7 +73,11 @@ def launch_setup(context):
     executable='robot_state_publisher',
     output='screen',
     parameters=[{'robot_description': mouse_description,
-    'use_sim_time': True}] # add other parameters here if required
+    'use_sim_time': True}], # add other parameters here if required
+    remappings=[
+            ('/tf','/mouse/tf'),
+            ('/tf_static','/mouse/tf_static')
+        ]
     )
     
     spawn_mouse = Node(package='gazebo_ros', executable='spawn_entity.py',
@@ -98,7 +106,7 @@ def launch_setup(context):
         ]
     ))
 
-    return [gazebo,spawn_maze,*actions]
+    return [gazebo,node_robot_state_publisher,spawn_maze,*actions]
 
 def generate_launch_description():
     opfunc = OpaqueFunction(function = launch_setup)

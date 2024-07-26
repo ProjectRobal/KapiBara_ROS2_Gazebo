@@ -15,3 +15,8 @@ register(
      id="gym/Parking-v0",
      entry_point="gym.environments.parking:Parking"
 )
+
+register(
+     id="gym/Catch-v0",
+     entry_point="gym.environments.catch:Catch"
+)

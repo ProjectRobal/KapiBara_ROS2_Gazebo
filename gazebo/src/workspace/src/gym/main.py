@@ -21,7 +21,7 @@ def main():
     if not os.path.exists("./models"):
         os.mkdir("./models")
     
-    env_name = 'gym/Parking-v0'
+    env_name = 'gym/Catch-v0'
     # env_name = 'PongNoFrameskip-v4'
     use_prioritization = True
     use_double = False

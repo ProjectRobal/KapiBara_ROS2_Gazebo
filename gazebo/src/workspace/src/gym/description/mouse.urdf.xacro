@@ -132,7 +132,7 @@
   </joint> -->
 
   <!-- ros2_control Configuration -->
-  <ros2_control name="GazeboSystem" type="system">
+  <ros2_control name="GazeboSystem_$(arg name)" type="system">
     <hardware>
       <plugin>gazebo_ros2_control/GazeboSystem</plugin>
     </hardware>
@@ -153,6 +153,7 @@
     <plugin name="$(arg name)_gazebo_ros2_control" filename="libgazebo_ros2_control.so">
       <ros>
         <namespace>/$(arg name)</namespace>
+        <remapping>/tf:=/$(arg name)/tf</remapping>
       </ros>
       <robot_param_node>/$(arg name)/robot_state_publisher</robot_param_node>
       <parameters>$(find gym)/config/my_controllers.yaml</parameters>
