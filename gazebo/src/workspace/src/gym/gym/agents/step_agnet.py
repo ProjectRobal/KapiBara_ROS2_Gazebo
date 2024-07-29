@@ -162,23 +162,23 @@ class KapiBaraStepAgent:
         
         self._tof_sub = []
         
-        self._tof_sub.append(self._node.create_subscription(LaserScan,"/Gazebo/front_left",lambda msg: self.tof_callback(0,msg),10))
-        self._tof_sub.append(self._node.create_subscription(LaserScan,"/Gazebo/front_right",lambda msg: self.tof_callback(1,msg),10))
-        self._tof_sub.append(self._node.create_subscription(LaserScan,"/Gazebo/side_left",lambda msg: self.tof_callback(2,msg),10))
-        self._tof_sub.append(self._node.create_subscription(LaserScan,"/Gazebo/side_right",lambda msg: self.tof_callback(3,msg),10))
-        self._tof_sub.append(self._node.create_subscription(LaserScan,"/Gazebo/floor",lambda msg: self.tof_callback(11,msg),10))
+        self._tof_sub.append(self._node.create_subscription(LaserScan,"/KapiBara/front_left",lambda msg: self.tof_callback(0,msg),10))
+        self._tof_sub.append(self._node.create_subscription(LaserScan,"/KapiBara/front_right",lambda msg: self.tof_callback(1,msg),10))
+        self._tof_sub.append(self._node.create_subscription(LaserScan,"/KapiBara/side_left",lambda msg: self.tof_callback(2,msg),10))
+        self._tof_sub.append(self._node.create_subscription(LaserScan,"/KapiBara/side_right",lambda msg: self.tof_callback(3,msg),10))
+        self._tof_sub.append(self._node.create_subscription(LaserScan,"/KapiBara/floor",lambda msg: self.tof_callback(11,msg),10))
                 
         # creates subscription for orientation
         
-        self._orientaion_sub = self._node.create_subscription(Imu,"/Gazebo/orientation",self.orientaion_callback,10)
+        self._orientaion_sub = self._node.create_subscription(Imu,"/KapiBara/orientation",self.orientaion_callback,10)
         
         # creates subcription for position
         
-        self._odometry_sub = self._node.create_subscription(Odometry,"/motors/odom",self.odometry_callback,10)
+        self._odometry_sub = self._node.create_subscription(Odometry,"/KapiBara/motors/odom",self.odometry_callback,10)
         
         # creates publisher for ros2 control twist
         
-        self.twist_output = self._node.create_publisher(Twist, "/motors/cmd_vel_unstamped", 10)
+        self.twist_output = self._node.create_publisher(Twist, "/KapiBara/motors/cmd_vel_unstamped", 10)
         
         self._step_count = 0
         

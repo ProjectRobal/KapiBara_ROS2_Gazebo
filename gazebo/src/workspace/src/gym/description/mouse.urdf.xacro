@@ -94,14 +94,14 @@
   <joint name="left_wheel_joint" type="continuous">
     <parent link="base_link"/>
     <child link="left_wheel_link"/>
-    <origin xyz="-0.25 0.3 -0.15" rpy="${-pi/2} 0 0"/>
+    <origin xyz="-0.25 0.3 -0.15" rpy="${pi/2} 0 0"/>
     <axis xyz="0 0 1"/>
   </joint>
 
   <joint name="right_wheel_joint" type="continuous">
     <parent link="base_link"/>
     <child link="right_wheel_link"/>
-    <origin xyz="-0.25 -0.3 -0.15" rpy="${-pi/2} 0 0"/>
+    <origin xyz="-0.25 -0.3 -0.15" rpy="${pi/2} 0 0"/>
     <axis xyz="0 0 1"/>
   </joint>
 
@@ -152,7 +152,7 @@
   <gazebo>
     <plugin name="$(arg name)_gazebo_ros2_control" filename="libgazebo_ros2_control.so">
       <ros>
-        <namespace>/$(arg name)</namespace>
+        <namespace>$(arg name)</namespace>
         <remapping>/tf:=/$(arg name)/tf</remapping>
       </ros>
       <robot_param_node>/$(arg name)/robot_state_publisher</robot_param_node>

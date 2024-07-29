@@ -163,15 +163,15 @@ class Catch(gym.Env):
         reward = -0.04
         
         # check sensor data
-        id = 0
-        for distance in observation[0:4]:
-            id+=1
-            if distance < 0.1:
-                reward = -0.5
-                self._node.get_logger().info(f"Robot hits the wall, terminated!, sensor id: {id}")
-                terminated = True
-                break
-
+        # id = 0
+        # for distance in observation[0:4]:
+        #     id+=1
+        #     if distance < 0.1:
+        #         reward = -0.5
+        #         self._node.get_logger().info(f"Robot hits the wall, terminated!, sensor id: {id}")
+        #         terminated = True
+        #         break
+        
         # if self._robot_data[11] < 0.1:
         #     reward = -0.5
         #     self._node.get_logger().info("Robot hits the wall, terminated!, back sensor!")

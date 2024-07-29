@@ -40,8 +40,13 @@ def launch_setup(context):
         package='robot_state_publisher',
         executable='robot_state_publisher',
         output='screen',
+        namespace="KapiBara",
         parameters=[{'robot_description': robot_description_raw,
-        'use_sim_time': True}] # add other parameters here if required
+        'use_sim_time': True}], # add other parameters here if required
+        remappings=[
+            ('/tf','/KapiBara/tf'),
+            ('/tf_static','/KapiBara/tf_static')
+        ]
     )
 
     # Use xacro to process the file    
@@ -72,6 +77,7 @@ def launch_setup(context):
     package='robot_state_publisher',
     executable='robot_state_publisher',
     output='screen',
+    namespace="mouse",
     parameters=[{'robot_description': mouse_description,
     'use_sim_time': True}], # add other parameters here if required
     remappings=[
@@ -87,18 +93,19 @@ def launch_setup(context):
     diff_drive_spawner = Node(
         package="controller_manager",
         executable="spawner",
+        namespace="mouse",
         arguments=["mouse_motors",'--controller-manager-timeout','240','--ros-args']
     )
 
     joint_broad_spawner = Node(
         package="controller_manager",
         executable="spawner",
+        namespace="mouse",
         arguments=["mouse_joint_state",'--controller-manager-timeout','240','--ros-args']
     )
     
     actions.append(GroupAction(
         actions=[
-            PushRosNamespace('mouse'),
             mouse_state_publisher,
             spawn_mouse,
             diff_drive_spawner,

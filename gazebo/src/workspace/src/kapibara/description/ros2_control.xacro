@@ -117,9 +117,10 @@
     <gazebo>
         <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
             <ros>
-                <namespace>/</namespace>
+                <namespace>KapiBara</namespace>
+                <remapping>/tf:=/KapiBara/tf</remapping>
             </ros>
-            <robot_param_node>/robot_state_publisher</robot_param_node>
+            <robot_param_node>/KapiBara/robot_state_publisher</robot_param_node>
             <parameters>$(find kapibara)/config/my_controllers.yaml</parameters>
             <parameters>$(find kapibara)/config/my_controllers_sim.yaml</parameters>
         </plugin>

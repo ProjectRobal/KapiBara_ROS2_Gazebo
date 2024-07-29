@@ -102,7 +102,7 @@ class Collect(gym.Env):
         
                 
         # create client for step control service for KapiBara robot
-        self._robot = KapiBaraStepAgent(self._node,position=[0.0,0.0,0.0],rotation=[0.0,0.0,0],reload_agent=False,use_camera=True)
+        self._robot = KapiBaraStepAgent(self._node,position=[0.0,0.0,0.0],rotation=[0.0,0.0,0],reload_agent=False,use_camera=True,max_linear_speed=0.25)
         # create client for service to control gazebo environment
         
         self._sim = SimulationControl(self._node)

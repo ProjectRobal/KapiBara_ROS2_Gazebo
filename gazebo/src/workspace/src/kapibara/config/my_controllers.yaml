@@ -1,4 +1,4 @@
-controller_manager:
+KapiBara/controller_manager:
   ros__parameters:
     update_rate: 1000
     #use_sim_time: true
@@ -13,7 +13,7 @@ controller_manager:
       type: position_controllers/JointGroupPositionController
 
 
-motors:
+KapiBara/motors:
   ros__parameters:
 
     publish_rate: 50.0
@@ -28,7 +28,7 @@ motors:
 
     use_stamped_vel: False
 
-ears_controller:
+KapiBara/ears_controller:
   ros__parameters:
     joints:
       - right_ear_joint

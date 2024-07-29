@@ -46,8 +46,8 @@
             </camera>
             <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
                 <ros>
-                <namespace>KapiBara</namespace>
-                <remapping>~/out:=camera</remapping>
+                    <namespace>KapiBara</namespace>
+                    <remapping>~/out:=camera</remapping>
                 </ros>
                 <frame_name>camera_link_optical</frame_name>
             </plugin>
