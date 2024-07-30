@@ -162,15 +162,15 @@ class KapiBaraStepAgent:
         
         self._tof_sub = []
         
-        self._tof_sub.append(self._node.create_subscription(LaserScan,"/KapiBara/front_left",lambda msg: self.tof_callback(0,msg),10))
-        self._tof_sub.append(self._node.create_subscription(LaserScan,"/KapiBara/front_right",lambda msg: self.tof_callback(1,msg),10))
-        self._tof_sub.append(self._node.create_subscription(LaserScan,"/KapiBara/side_left",lambda msg: self.tof_callback(2,msg),10))
-        self._tof_sub.append(self._node.create_subscription(LaserScan,"/KapiBara/side_right",lambda msg: self.tof_callback(3,msg),10))
-        self._tof_sub.append(self._node.create_subscription(LaserScan,"/KapiBara/floor",lambda msg: self.tof_callback(11,msg),10))
+        # self._tof_sub.append(self._node.create_subscription(LaserScan,"/KapiBara/front_left",lambda msg: self.tof_callback(0,msg),10))
+        # self._tof_sub.append(self._node.create_subscription(LaserScan,"/KapiBara/front_right",lambda msg: self.tof_callback(1,msg),10))
+        # self._tof_sub.append(self._node.create_subscription(LaserScan,"/KapiBara/side_left",lambda msg: self.tof_callback(2,msg),10))
+        # self._tof_sub.append(self._node.create_subscription(LaserScan,"/KapiBara/side_right",lambda msg: self.tof_callback(3,msg),10))
+        # self._tof_sub.append(self._node.create_subscription(LaserScan,"/KapiBara/floor",lambda msg: self.tof_callback(11,msg),10))
                 
         # creates subscription for orientation
         
-        self._orientaion_sub = self._node.create_subscription(Imu,"/KapiBara/orientation",self.orientaion_callback,10)
+        # self._orientaion_sub = self._node.create_subscription(Imu,"/KapiBara/orientation",self.orientaion_callback,10)
         
         # creates subcription for position
         

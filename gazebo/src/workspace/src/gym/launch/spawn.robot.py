@@ -53,7 +53,7 @@ def generate_launch_description():
     )
    
     spawn = Node(package='gazebo_ros', executable='spawn_entity.py',
-                    arguments=["-topic","/KapiBara/robot_description","-entity","kapibara","-timeout","240","-x",position_x,"-y",position_y,"-z",position_z,"-R",rot_roll,"-P",rot_pitch,"-Y",rot_yaw],
+                    arguments=["-topic","/KapiBara/robot_description","-robot_namespace","KapiBara","-entity","kapibara","-timeout","240","-x",position_x,"-y",position_y,"-z",position_z,"-R",rot_roll,"-P",rot_pitch,"-Y",rot_yaw],
                     namespace="KapiBara",
                     output='screen')
     

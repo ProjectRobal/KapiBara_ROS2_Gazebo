@@ -2,7 +2,7 @@ import os
 import logging
 from ament_index_python.packages import get_package_share_directory,get_package_prefix
 from launch import LaunchDescription,substitutions
-from launch.actions import IncludeLaunchDescription,DeclareLaunchArgument,GroupAction,OpaqueFunction
+from launch.actions import IncludeLaunchDescription,DeclareLaunchArgument,GroupAction,OpaqueFunction,TimerAction
 from launch_ros.actions import PushRosNamespace
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_xml.launch_description_sources import XMLLaunchDescriptionSource
@@ -50,7 +50,7 @@ def launch_setup(context):
     )
 
     # Use xacro to process the file    
-    xacro_file = os.path.join(get_package_share_directory(pkg_name),'description/mouse.urdf.xacro')
+    xacro_file_ = os.path.join(get_package_share_directory(pkg_name),'description/mouse.urdf.xacro')
     
     gazebo_env = SetEnvironmentVariable("GAZEBO_MODEL_PATH", os.path.join(get_package_prefix("kapibara"), "share"))
 
@@ -71,15 +71,15 @@ def launch_setup(context):
     
     actions = []
     
-    mouse_description = xacro.process_file(xacro_file,mappings={'name' : 'mouse'}).toxml()
+    mouse_description = xacro.process_file(xacro_file_,mappings={'name' : 'mouse'}).toxml()
     
     mouse_state_publisher = Node(
     package='robot_state_publisher',
     executable='robot_state_publisher',
     output='screen',
-    namespace="mouse",
     parameters=[{'robot_description': mouse_description,
     'use_sim_time': True}], # add other parameters here if required
+    namespace="mouse",
     remappings=[
             ('/tf','/mouse/tf'),
             ('/tf_static','/mouse/tf_static')
@@ -87,7 +87,8 @@ def launch_setup(context):
     )
     
     spawn_mouse = Node(package='gazebo_ros', executable='spawn_entity.py',
-                arguments=["-topic",f"/mouse/robot_description","-entity","stefan","-timeout","240"],
+                arguments=["-topic","/mouse/robot_description","-robot_namespace","mouse","-entity","stefan","-timeout","240"],
+                namespace="mouse",
                 output='screen')
     
     diff_drive_spawner = Node(
@@ -113,7 +114,11 @@ def launch_setup(context):
         ]
     ))
 
-    return [gazebo,node_robot_state_publisher,spawn_maze,*actions]
+    return [gazebo,spawn_maze,*actions,TimerAction(period=10.0,actions=[node_robot_state_publisher,
+            IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([os.path.join(
+            get_package_share_directory('gym'), 'launch', 'spawn.robot.py',)]),
+        )])]
 
 def generate_launch_description():
     opfunc = OpaqueFunction(function = launch_setup)

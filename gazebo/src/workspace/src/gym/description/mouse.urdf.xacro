@@ -152,8 +152,9 @@
   <gazebo>
     <plugin name="$(arg name)_gazebo_ros2_control" filename="libgazebo_ros2_control.so">
       <ros>
-        <namespace>$(arg name)</namespace>
+        <!-- <namespace>$(arg name)</namespace> -->
         <remapping>/tf:=/$(arg name)/tf</remapping>
+        <remapping>/tf_static:=/$(arg name)/tf_static</remapping>
       </ros>
       <robot_param_node>/$(arg name)/robot_state_publisher</robot_param_node>
       <parameters>$(find gym)/config/my_controllers.yaml</parameters>

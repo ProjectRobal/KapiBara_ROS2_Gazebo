@@ -1,6 +1,7 @@
 mouse/controller_manager:
   ros__parameters:
     update_rate: 1000
+    use_sim_time: true
 
     mouse_motors:
       type: diff_drive_controller/DiffDriveController

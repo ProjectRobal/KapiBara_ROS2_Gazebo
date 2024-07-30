@@ -18,6 +18,8 @@ from threading import Thread
 
 from copy import copy
 
+import time
+
 class Catch(gym.Env):
     metadata = {"render_modes": ["human"]}
     
@@ -78,6 +80,7 @@ class Catch(gym.Env):
         # Start an Gazbo using proper launch file
         self._env = launch_environment("mouse.trap.one")
         self._env.start()
+        
                 
         # self._point_topics = {}
         

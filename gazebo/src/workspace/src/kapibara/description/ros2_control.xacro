@@ -36,7 +36,7 @@
     </xacro:unless>
 
     <xacro:if value="$(arg sim_mode)">
-        <ros2_control name="GazeboSystem" type="system">
+        <ros2_control name="GazeboSystem_KapiBara" type="system">
             <hardware>
                 <plugin>gazebo_ros2_control/GazeboSystem</plugin>
             </hardware>
@@ -115,10 +115,11 @@
     </xacro:if>
 
     <gazebo>
-        <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
+        <plugin name="kapibara_gazebo_ros2_control" filename="libgazebo_ros2_control.so">
             <ros>
-                <namespace>KapiBara</namespace>
+                <!-- <namespace>KapiBara</namespace> -->
                 <remapping>/tf:=/KapiBara/tf</remapping>
+                <remapping>/tf_static:=/KapiBara/tf_static</remapping>
             </ros>
             <robot_param_node>/KapiBara/robot_state_publisher</robot_param_node>
             <parameters>$(find kapibara)/config/my_controllers.yaml</parameters>
