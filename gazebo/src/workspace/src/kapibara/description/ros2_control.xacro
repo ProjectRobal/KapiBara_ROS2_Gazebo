@@ -117,7 +117,7 @@
     <gazebo>
         <plugin name="kapibara_gazebo_ros2_control" filename="libgazebo_ros2_control.so">
             <ros>
-                <!-- <namespace>KapiBara</namespace> -->
+                <namespace>KapiBara</namespace>
                 <remapping>/tf:=/KapiBara/tf</remapping>
                 <remapping>/tf_static:=/KapiBara/tf_static</remapping>
             </ros>
