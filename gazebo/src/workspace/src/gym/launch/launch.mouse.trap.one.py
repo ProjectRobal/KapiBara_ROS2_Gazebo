@@ -114,11 +114,7 @@ def launch_setup(context):
         ]
     ))
 
-    return [gazebo,spawn_maze,*actions,TimerAction(period=10.0,actions=[node_robot_state_publisher,
-            IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([os.path.join(
-            get_package_share_directory('gym'), 'launch', 'spawn.robot.py',)]),
-        )])]
+    return [gazebo,node_robot_state_publisher,spawn_maze,*actions]
 
 def generate_launch_description():
     opfunc = OpaqueFunction(function = launch_setup)

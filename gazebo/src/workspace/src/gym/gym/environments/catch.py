@@ -14,6 +14,9 @@ from gazebo_msgs.msg import ContactsState
 from gym.agents.step_agnet import KapiBaraStepAgent
 from gym.utils.utils_sim import SimulationControl
 
+from sensor_msgs.msg import Imu,LaserScan
+from geometry_msgs.msg import Twist
+
 from threading import Thread
 
 from copy import copy
@@ -23,14 +26,26 @@ import time
 class Catch(gym.Env):
     metadata = {"render_modes": ["human"]}
     
-    def point_callback(self,contacts:ContactsState):
+    def mouse_collison_callback(self,contacts:ContactsState):
         for contact in contacts.states:
             if contact.collision1_name.find("kapibara") > -1:
-                self._point_id_triggered = contact.collision2_name.split("::")[0]
+                self._mouse_has_been_catched = True
                 return
             if contact.collision2_name.find("kapibara") > -1:
-                self._point_id_triggered = contact.collision1_name.split("::")[0]
+                self._mouse_has_been_catched = True
                 return
+            
+    def mouse_tof_callback(self,tof_msg:LaserScan):
+        range = min(tof_msg.ranges)
+        
+        if range > tof_msg.range_max:
+            range = tof_msg.range_max
+        
+        self._mouse_distance = range
+        
+        self._node.get_logger().debug(f"Got range id: {id}")
+            
+    
     
     def __init__(self, render_mode=None,sequence_length=1):
 
@@ -41,13 +56,12 @@ class Catch(gym.Env):
         high = np.array([1.0,1.0,1.0,1.0 , 1.0,1.0,1.0,1.0 , *([1.0]*40*30*3) ]*sequence_length,dtype=np.float32)
         low = np.array([0.0,0.0,0.0,0.0 , -1.0,-1.0,-1.0,-1.0 , *([0.0]*40*30*3)]*sequence_length,dtype=np.float32)
         
+        self._mouse_has_been_catched = False       
+        self._mouse_distance = 10 
         
-        print("High shape: ",high.shape)
-        
-        self._point_id_triggered = ""
-        
-        self._point_collected = 0
-        
+        self._max_angular_speed = 2.0
+        self._max_linear_speed = 1.0
+                
         self.observation_space = spaces.Box(low, high, dtype=np.float32)
         # We have 4 actions, corresponding to "right", "up", "left", "down"
         self.action_space = spaces.Discrete(4)
@@ -72,37 +86,43 @@ class Catch(gym.Env):
         rclpy.init()
 
         self._node=Node("maze_env")
-    
+
+        self._mouse_contact_topic = self._node.create_subscription(ContactsState,"/mouse/collision",self.mouse_collison_callback,10)
+        self._mouse_tof_sensor = self._node.create_subscription(LaserScan,"/mouse/front",self.mouse_tof_callback,10)
         
-        # run spin in seaparated thread
-        #self._spin_thread = Thread(target=rclpy.spin,args=(self._node,))
-        #self._spin_thread.start()
+        self._mouse_twist_output = self._node.create_publisher(Twist, "/mouse/mouse_motors/cmd_vel_unstamped", 10)
+        
         # Start an Gazbo using proper launch file
         self._env = launch_environment("mouse.trap.one")
         self._env.start()
         
-                
-        # self._point_topics = {}
-        
-        # for i in range(len(self.point_positions)):
-        #     self._node.get_logger().info(f"Created subscription for point{i}")
-        #     self._point_topics["point"+str(i)]=self._node.create_subscription(ContactsState,"/trigger"+str(i),self.point_callback,10)
-        
-                
         # create client for step control service for KapiBara robot
         self._robot = KapiBaraStepAgent(self._node,position=[-1.0,0.0,0.0],rotation=[0.0,0.0,0],reload_agent=False,use_camera=True)
         # create client for service to control gazebo environment
         
         self._sim = SimulationControl(self._node)
         
+        
         self._sim.pause()
         self._sim.reset()
+        
+    def move_mouse(self,linear,angular):
+        
+        twist = Twist()
+        
+        linear = np.clip(int(linear),-1,1)
+        angular = np.clip(int(angular),-1,1)
+                
+        twist.angular.z = angular * self._max_angular_speed
+        twist.linear.x = linear * self._max_linear_speed
+        
+        self._mouse_twist_output.publish(twist)
     
     def _get_obs(self):
         return self._robot_data
 
     def _get_info(self):
-        # get information distance from obstacltes:
+        # get information about distance between mouse and kapibara
         return {}
         
     def reset(self, seed=None, options=None):
@@ -116,7 +136,9 @@ class Catch(gym.Env):
         self._robot.reset_agent()
         
         self._robot_data = np.zeros(self._robot_data.shape,dtype = np.float32)
-        self._point_id_triggered = ""
+        
+        self._mouse_has_been_catched = False       
+        self._mouse_distance = 10
 
         observation = self._get_obs()
         info = self._get_info()
@@ -133,6 +155,12 @@ class Catch(gym.Env):
         
         
         self._robot.move(action)
+        
+        if self._mouse_distance < 0.5:
+            self.move_mouse(0.0,-1.0)
+        else:
+            self.move_mouse(1.0,0.0)
+        
         self._sim.unpause()
         # wait couple of steps
         self._robot.wait_for_steps()
@@ -163,7 +191,7 @@ class Catch(gym.Env):
         # When robot hits the wall it will get -0.5 reward and environment is terminated
         
         # default reward for every step
-        reward = -0.04
+        reward = 0.0
         
         # check sensor data
         # id = 0

@@ -14,7 +14,7 @@
       <geometry>
         <box size="0.5 0.5 0.5"/>
       </geometry>
-      <material name="blue"/>
+      <material name="red"/>
     </visual>
     <collision name="base_link_collision_$(arg name)">
       <geometry>
@@ -47,12 +47,12 @@
     <xacro:inertial_cylinder mass="0.2" radius="0.1" length="0.1">
         <origin xyz="0 0 0" rpy="0 0 0" />
     </xacro:inertial_cylinder>
-    <visual>
+    <!-- <visual>
       <geometry>
         <cylinder length="0.1" radius="0.1"/>
       </geometry>
       <material name="black"/>
-    </visual>
+    </visual> -->
     <collision>
       <geometry>
         <cylinder length="0.1" radius="0.1"/>
@@ -68,12 +68,12 @@
     <xacro:inertial_cylinder mass="0.2" radius="0.1" length="0.1">
         <origin xyz="0 0 0" rpy="0 0 0" />
     </xacro:inertial_cylinder>
-    <visual>
+    <!-- <visual>
       <geometry>
         <cylinder length="0.1" radius="0.1"/>
       </geometry>
       <material name="black"/>
-    </visual>
+    </visual> -->
     <collision>
       <geometry>
         <cylinder length="0.1" radius="0.1"/>
@@ -89,12 +89,12 @@
     <xacro:inertial_sphere mass="0.1" radius="0.1">
         <origin xyz="0 0 0" rpy="0 0 0" />
     </xacro:inertial_sphere>
-    <visual>
+    <!-- <visual>
       <geometry>
         <sphere radius="0.1"/>
       </geometry>
       <material name="grey"/>
-    </visual>
+    </visual> -->
     <collision>
       <geometry>
         <sphere radius="0.1"/>
