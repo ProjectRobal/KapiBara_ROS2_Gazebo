@@ -56,7 +56,7 @@
           <alwaysOn>true</alwaysOn>
           <frameName>mine_link</frameName>
           <ros>
-          <remapping>/bumper_states:=/$(arg topic)</remapping>
+          <remapping>bumper_states:=$(arg topic)</remapping>
           </ros>
       </plugin>
     </sensor>
