@@ -26,9 +26,9 @@
   <gazebo reference="base_link">
       <material>Gazebo/Red</material>
 
-      <sensor type="contact" name="contact_sensor">
+      <!-- <sensor type="contact" name="contact_sensor">
         <always_on>true</always_on>
-        <update_rate>10</update_rate>
+        <update_rate>100</update_rate>
         <contact>
           <collision>base_link_collision_$(arg name)_collision</collision>
         </contact>
@@ -36,11 +36,10 @@
             <alwaysOn>true</alwaysOn>
             <frameName>base_link</frameName>
             <ros>
-              <!-- <namespace>$(arg name)</namespace> -->
               <remapping>bumper_states:=collision</remapping>
             </ros>
         </plugin>
-      </sensor>
+      </sensor> -->
   </gazebo>
 
   <link name="left_wheel_link">

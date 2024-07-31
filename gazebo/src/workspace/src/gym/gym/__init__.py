@@ -18,5 +18,6 @@ register(
 
 register(
      id="gym/Catch-v0",
-     entry_point="gym.environments.catch:Catch"
+     entry_point="gym.environments.catch:Catch",
+     kwargs={'max_distance':4,'mouse_speed':0.25}
 )

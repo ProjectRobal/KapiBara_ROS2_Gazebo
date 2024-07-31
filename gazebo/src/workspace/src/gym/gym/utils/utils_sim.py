@@ -12,6 +12,7 @@ from rclpy.node import Node
 from std_srvs.srv import Empty
 
 from gazebo_msgs.srv import DeleteEntity
+from gazebo_msgs.srv import GetEntityState
 
 class SimulationControl:
     def __init__(self,parent_node:Node):
@@ -47,6 +48,57 @@ class SimulationControl:
         if not self._delete_entity_srv.wait_for_service(60):
             raise TimeoutError("Cannot connect to service: /delete_entity")
         
+        self._get_entity_srv = self._node.create_client(GetEntityState,"/gazebo/get_entity_state")
+        
+        # wait 60 seconds for service ready
+        if not self._get_entity_srv.wait_for_service(60):
+            raise TimeoutError("Cannot connect to service: /delete_entity")
+        
+    def get_entity_state(self,name:str):
+        
+        request = GetEntityState.Request()
+        
+        request.name = name
+        
+        future = self._get_entity_srv.call_async(request)
+        
+        position = np.zeros(3,dtype=np.float32)
+        rotation = np.zeros(3,dtype=np.float32)
+        quaterion = np.zeros(4,dtype=np.float32)
+        
+        while rclpy.ok():
+            rclpy.spin_once(self._node)
+            if future.done():
+                result = future.result()
+                
+                if result.success:
+                    self._node.get_logger().debug("Succesfully get information about: "+name)
+                    
+                    result = result.state
+                    
+                    position[0] = result.pose.position.x
+                    position[1] = result.pose.position.y
+                    position[2] = result.pose.position.z
+                    
+                    quaterion[0] = result.pose.orientation.x
+                    quaterion[1] = result.pose.orientation.y
+                    quaterion[2] = result.pose.orientation.z
+                    quaterion[3] = result.pose.orientation.w
+                    
+                    rotation[0] = np.arctan2( 2*(quaterion[3]*quaterion[0] + quaterion[1]*quaterion[2]),
+                                                 1 - 2*(quaterion[0]*quaterion[0] + quaterion[1]*quaterion[1]))
+                    rotation[1] = 2*np.arctan2(1+2*(quaterion[3]*quaterion[1] - quaterion[0]*quaterion[2]),
+                                               1-2*(quaterion[3]*quaterion[1] - quaterion[0]*quaterion[2])) - np.pi / 2.0
+                    rotation[2] = np.arctan2(2*(quaterion[3]*quaterion[2] + quaterion[0]*quaterion[1]),
+                                             1 - 2*(quaterion[1]*quaterion[1] + quaterion[2]*quaterion[2]))
+                    
+                    
+                else:
+                    self._node.get_logger().error("Cannot get entity: "+name+" information: "+result.status_message)
+                break
+            
+        return (position,rotation,quaterion)
+        
     def remove_entity(self,name:str):
         
         request = DeleteEntity.Request()
@@ -61,7 +113,7 @@ class SimulationControl:
                 result = future.result()
                 
                 if result.success:
-                    self._node.get_logger().info("Succesfully removed entity: "+name)
+                    self._node.get_logger().debug("Succesfully removed entity: "+name)
                 else:
                     self._node.get_logger().error("Cannot remove entity: "+name+" status: "+result.status_message)
                 break

@@ -15,6 +15,9 @@ def generate_launch_description():
         executable="main.py",
         output='screen',
         emulate_tty=True,
+        parameters=[{
+            "use_sim_time":True
+        }],
         arguments=['--ros-args', '--log-level', logger]
     )
     

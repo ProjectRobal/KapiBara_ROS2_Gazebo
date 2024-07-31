@@ -21,7 +21,6 @@ from threading import Thread
 
 from copy import copy
 
-import time
 
 class Catch(gym.Env):
     metadata = {"render_modes": ["human"]}
@@ -47,7 +46,7 @@ class Catch(gym.Env):
             
     
     
-    def __init__(self, render_mode=None,sequence_length=1):
+    def __init__(self, render_mode=None,sequence_length=1,max_distance=4,mouse_speed = 0.25,timeout=30):
 
         # Observations are dictionaries with the agent's and the target's location.
         # Each location is encoded as an element of {0, ..., `size`}^2, i.e. MultiDiscrete([size, size]).
@@ -56,11 +55,16 @@ class Catch(gym.Env):
         high = np.array([1.0,1.0,1.0,1.0 , 1.0,1.0,1.0,1.0 , *([1.0]*40*30*3) ]*sequence_length,dtype=np.float32)
         low = np.array([0.0,0.0,0.0,0.0 , -1.0,-1.0,-1.0,-1.0 , *([0.0]*40*30*3)]*sequence_length,dtype=np.float32)
         
+        self._max_distance = max_distance
+        
+        self._timeout = timeout
+        
         self._mouse_has_been_catched = False       
         self._mouse_distance = 10 
+        self._distance_between = 0.0
         
         self._max_angular_speed = 2.0
-        self._max_linear_speed = 1.0
+        self._max_linear_speed = mouse_speed
                 
         self.observation_space = spaces.Box(low, high, dtype=np.float32)
         # We have 4 actions, corresponding to "right", "up", "left", "down"
@@ -97,15 +101,14 @@ class Catch(gym.Env):
         self._env.start()
         
         # create client for step control service for KapiBara robot
-        self._robot = KapiBaraStepAgent(self._node,position=[-1.0,0.0,0.0],rotation=[0.0,0.0,0],reload_agent=False,use_camera=True)
+        self._robot = KapiBaraStepAgent(self._node,position=[2.0,0.0,0.0],rotation=[0.0,0.0,0],reload_agent=False,use_camera=True)
         # create client for service to control gazebo environment
         
         self._sim = SimulationControl(self._node)
-        
-        
+                
         self._sim.pause()
         self._sim.reset()
-        
+                
     def move_mouse(self,linear,angular):
         
         twist = Twist()
@@ -117,13 +120,23 @@ class Catch(gym.Env):
         twist.linear.x = linear * self._max_linear_speed
         
         self._mouse_twist_output.publish(twist)
+        
+    def _get_distance(self):
+        agent_info = self._sim.get_entity_state("kapibara")
+        mouse_info = self._sim.get_entity_state("stefan")
+        
+        self._distance_between = np.linalg.norm(agent_info[0] - mouse_info[0])
+        
+        self._node.get_logger().info("Distance between robots: "+str(self._distance_between))
+        
+        return self._distance_between
     
     def _get_obs(self):
         return self._robot_data
 
     def _get_info(self):
         # get information about distance between mouse and kapibara
-        return {}
+        return {"distance":self._distance_between}
         
     def reset(self, seed=None, options=None):
         # We need the following line to seed self.np_random
@@ -139,9 +152,13 @@ class Catch(gym.Env):
         
         self._mouse_has_been_catched = False       
         self._mouse_distance = 10
+        
+        self._get_distance()
 
         observation = self._get_obs()
         info = self._get_info()
+        
+        self._timer = self._node.get_clock().now().to_msg().sec
 
         return observation, info
     
@@ -167,17 +184,13 @@ class Catch(gym.Env):
         
         self._sim.pause()
         
+        self._get_distance()
+        
         observation = self._robot.get_observations()
         
         frame = self._robot.get_camera_frame()[-1]
-        
-        # self._robot_data[:8] = observation[:8]
-        # self._robot_data[8:] = frame[:]
-        
+       
         self.append_observations(np.concatenate((observation[:8],frame)))
-        
-        #print(self._robot_data.shape)
-        # We use `np.clip` to make sure we don't leave the grid
         
         # An episode is done iff the agent has reached the target
         terminated = False
@@ -185,31 +198,30 @@ class Catch(gym.Env):
         
         # We want agent to do as few steps as possible
         #
-        # Each step will give reward -0.04
-        # It will get 1.0 for reaching it is goal, finding all points
-        # It will get 0.5 for finding one point
-        # When robot hits the wall it will get -0.5 reward and environment is terminated
+        # Each step will give reward 0
+        # It will get 10.0 for reaching catching a target
+        # It will get -1.0 for timing out or hiting a wall
+        # It will get -10.0 when distance bettween robots is to big
         
         # default reward for every step
         reward = 0.0
         
-        # check sensor data
-        # id = 0
-        # for distance in observation[0:4]:
-        #     id+=1
-        #     if distance < 0.1:
-        #         reward = -0.5
-        #         self._node.get_logger().info(f"Robot hits the wall, terminated!, sensor id: {id}")
-        #         terminated = True
-        #         break
-        
-        # if self._robot_data[11] < 0.1:
-        #     reward = -0.5
-        #     self._node.get_logger().info("Robot hits the wall, terminated!, back sensor!")
-        #     terminated = True
-                
-        info = self._get_info()
+        if self._distance_between < 0.85:
+            reward = 10.0
+            done = True
+            self._node.get_logger().info("Robot catched the target!")
             
+        if self._distance_between > self._max_distance:
+            reward = -10.0
+            terminated = True
+            self._node.get_logger().info("Robot has lost the target!")
+            
+        if self._node.get_clock().now().to_msg().sec - self._timer > self._timeout:
+            terminated = True
+            reward = -1.0
+            self._node.get_logger().info("Simulation timed out!")
+    
+        info = self._get_info()        
                 
         return self._get_obs(), reward, terminated, done, info
     
