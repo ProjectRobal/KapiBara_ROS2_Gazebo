@@ -17,21 +17,17 @@ from gym.utils.utils_sim import SimulationControl
 from sensor_msgs.msg import Imu,LaserScan
 from geometry_msgs.msg import Twist
 
-from threading import Thread
-
-from copy import copy
-
 
 class Catch(gym.Env):
     metadata = {"render_modes": ["human"]}
     
     def mouse_collison_callback(self,contacts:ContactsState):
         for contact in contacts.states:
-            if contact.collision1_name.find("kapibara") > -1:
-                self._mouse_has_been_catched = True
+            if contact.collision1_name.find("Maze") > -1:
+                self._robot_has_hit_wall = True
                 return
-            if contact.collision2_name.find("kapibara") > -1:
-                self._mouse_has_been_catched = True
+            if contact.collision2_name.find("Maze") > -1:
+                self._robot_has_hit_wall = True
                 return
             
     def mouse_tof_callback(self,tof_msg:LaserScan):
@@ -59,7 +55,7 @@ class Catch(gym.Env):
         
         self._timeout = timeout
         
-        self._mouse_has_been_catched = False       
+        self._robot_has_hit_wall = False       
         self._mouse_distance = 10 
         self._distance_between = 0.0
         
@@ -91,7 +87,7 @@ class Catch(gym.Env):
 
         self._node=Node("maze_env")
 
-        self._mouse_contact_topic = self._node.create_subscription(ContactsState,"/mouse/collision",self.mouse_collison_callback,10)
+        self._mouse_contact_topic = self._node.create_subscription(ContactsState,"/KapiBara/collision",self.mouse_collison_callback,10)
         self._mouse_tof_sensor = self._node.create_subscription(LaserScan,"/mouse/front",self.mouse_tof_callback,10)
         
         self._mouse_twist_output = self._node.create_publisher(Twist, "/mouse/mouse_motors/cmd_vel_unstamped", 10)
@@ -150,7 +146,7 @@ class Catch(gym.Env):
         
         self._robot_data = np.zeros(self._robot_data.shape,dtype = np.float32)
         
-        self._mouse_has_been_catched = False       
+        self._robot_has_hit_wall = False       
         self._mouse_distance = 10
         
         self._get_distance()
@@ -220,6 +216,11 @@ class Catch(gym.Env):
             terminated = True
             reward = -1.0
             self._node.get_logger().info("Simulation timed out!")
+            
+        if self._robot_has_hit_wall:
+            terminated = True
+            reward = -1.0
+            self._node.get_logger().info("Robot hit the wall!")
     
         info = self._get_info()        
                 
