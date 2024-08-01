@@ -144,7 +144,7 @@ class KapiBaraStepAgent:
             self._max_angular_speed = max_angular_speed
             
         if max_linear_speed is None:
-            self._max_linear_speed = 1.0
+            self._max_linear_speed = 0.25
         else:
             self._max_linear_speed = max_linear_speed
             

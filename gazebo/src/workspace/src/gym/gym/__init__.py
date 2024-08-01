@@ -21,3 +21,9 @@ register(
      entry_point="gym.environments.catch:Catch",
      kwargs={'max_distance':4,'mouse_speed':0.25}
 )
+
+register(
+     id="gym/Follow-v0",
+     entry_point="gym.environments.follow:Follow",
+     kwargs={'min_distance':1.5,'max_distance':4}
+)

@@ -21,13 +21,13 @@ def main():
     if not os.path.exists("./models"):
         os.mkdir("./models")
     
-    env_name = 'gym/Catch-v0'
+    env_name = 'gym/Follow-v0'
     # env_name = 'PongNoFrameskip-v4'
     use_prioritization = True
     use_double = False
     use_dueling = False
     use_atari = False
-    env = make_env(env_name,sequence_length=5)
+    env = make_env(env_name,sequence_length=4)
     
     n_games = 1500
     bs = 64
@@ -46,11 +46,11 @@ def main():
 
     policy = EpsilonGreedyPolicy(n_actions=env.action_space.n, eps_dec=1e-4)
 
-    q_eval, q_target = make_dqn_networks(env, use_double=use_double,
+    q_eval, q_target = make_dqn_networks(env,hidden_layers=[4096], use_double=use_double,
                                          use_dueling=use_dueling,
                                          use_atari=use_atari)
     dqn_actor = Actor(q_eval, q_target, policy)
-    q_eval, q_target = make_dqn_networks(env, use_double=use_double,
+    q_eval, q_target = make_dqn_networks(env,hidden_layers=[4096], use_double=use_double,
                                          use_dueling=use_dueling,
                                          use_atari=use_atari)
     dqn_learner = Learner(q_eval, q_target,
