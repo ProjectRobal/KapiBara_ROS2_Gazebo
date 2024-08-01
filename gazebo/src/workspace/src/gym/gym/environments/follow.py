@@ -51,6 +51,15 @@ class Follow(gym.Env):
         high = np.array([1.0,1.0,1.0,1.0 , 1.0,1.0,1.0,1.0 , *([1.0]*40*30*3) ]*sequence_length,dtype=np.float32)
         low = np.array([0.0,0.0,0.0,0.0 , -1.0,-1.0,-1.0,-1.0 , *([0.0]*40*30*3)]*sequence_length,dtype=np.float32)
         
+        self._point_pointer = 0
+        
+        self._points_collection = np.array([
+            [-2,0],
+            [-2,-2],
+            [-4,-2],
+            [-4,-4]
+        ])
+        
         self._min_distance = min_distance
         self._max_distance = max_distance
         
@@ -119,19 +128,31 @@ class Follow(gym.Env):
         # we really care about 2D position
         current_position = mouse_info[0][:2]
         
-        target_rotation = np.arctan2(*(point - current_position))
+        target_rotation = -(np.arctan2(*(point - current_position)) + np.pi/2)
         
-        angular_movment = ( current_rotation - target_rotation )*0.32
+        while target_rotation >= np.pi:
+            target_rotation -= 2*np.pi
+        
+        while target_rotation <= - np.pi:
+            target_rotation += 2*np.pi
+            
+        
+        angular_movment = ( current_rotation - target_rotation )*0.3
         
         distance = np.linalg.norm(current_position-point)
         
-        linear_movment = distance*0.25
+        linear_movment = distance*1.0
+        
+        if distance > 1.0:
+            linear_movment = 0.25
         
         self.move_mouse(linear_movment,angular_movment)
         
-        self._node.get_logger().info("Current rotation: "+str(current_rotation)+" target: "+str(target_rotation))
+        # self._node.get_logger().info("Current rotation: "+str(current_rotation)+" target: "+str(target_rotation))
+        # self._node.get_logger().info("Current position: "+str(current_position)+" target: "+str(point))
+        # self._node.get_logger().info("Distance: "+str(distance))
         
-        return distance < 0.25
+        return distance < 0.15
         
                 
     def move_mouse(self,linear,angular):
@@ -178,6 +199,8 @@ class Follow(gym.Env):
         self._get_distance()
         
         self._last_distance_between = self._distance_between
+        
+        self._point_pointer = 0
 
         observation = self._get_obs()
         info = self._get_info()
@@ -196,10 +219,10 @@ class Follow(gym.Env):
         
         self._robot.move(action)
         
-        self.move_mouse_to(np.array([2,2]))
-            
-        self._steps = self._steps + 1
-        
+        self._node.get_logger().info("Current step: "+str(self._point_pointer))
+        if self.move_mouse_to(self._points_collection[self._point_pointer]):
+            self._point_pointer = self._point_pointer + 1
+                    
         self._sim.unpause()
         # wait couple of steps
         self._robot.wait_for_steps()
@@ -222,6 +245,7 @@ class Follow(gym.Env):
         #
         # Each step will give reward 0
         # It will get -1.0 for keeping too close or too large distance with target
+        # It will get -0.1 if robot doesn't keep steady distance
         
         # default reward for every step
         reward = 0.0
@@ -234,12 +258,12 @@ class Follow(gym.Env):
             
         if self._distance_between < self._min_distance or self._distance_between > self._max_distance:
             reward = -10.0
-            # terminated = True
+            terminated = True
             self._node.get_logger().info("Robot has lost the target!")
             
-        if self._steps >= 210:
+        if len(self._points_collection) >= self._point_pointer:
             done = True
-            # reward = 10.0
+            reward = 10.0
             self._node.get_logger().info("Robot has reached target!")
             
 
