@@ -21,7 +21,7 @@ from geometry_msgs.msg import Twist
 class Catch(gym.Env):
     metadata = {"render_modes": ["human"]}
     
-    def mouse_collison_callback(self,contacts:ContactsState):
+    def robot_collison_callback(self,contacts:ContactsState):
         for contact in contacts.states:
             if contact.collision1_name.find("Maze") > -1:
                 self._robot_has_hit_wall = True
@@ -87,7 +87,7 @@ class Catch(gym.Env):
 
         self._node=Node("maze_env")
 
-        self._mouse_contact_topic = self._node.create_subscription(ContactsState,"/KapiBara/collision",self.mouse_collison_callback,10)
+        self._mouse_contact_topic = self._node.create_subscription(ContactsState,"/KapiBara/collision",self.robot_collison_callback,10)
         self._mouse_tof_sensor = self._node.create_subscription(LaserScan,"/mouse/front",self.mouse_tof_callback,10)
         
         self._mouse_twist_output = self._node.create_publisher(Twist, "/mouse/mouse_motors/cmd_vel_unstamped", 10)
@@ -155,6 +155,7 @@ class Catch(gym.Env):
         info = self._get_info()
         
         self._timer = self._node.get_clock().now().to_msg().sec
+        self._last_robot_positon = self._sim.get_entity_state("kapibara")[0]
 
         return observation, info
     

@@ -82,8 +82,13 @@ def launch_setup(context):
         package='robot_state_publisher',
         executable='robot_state_publisher',
         output='screen',
+        namespace='KapiBara',
         parameters=[{'robot_description': robot_description_raw,
-        'use_sim_time': True}] # add other parameters here if required
+        'use_sim_time': True}], # add other parameters here if required
+        remappings=[
+            ('/tf','/KapiBara/tf'),
+            ('/tf_static','/KapiBara/tf_static')
+        ]
     )
     
     gazebo = IncludeLaunchDescription(

@@ -37,7 +37,16 @@ class Collect(gym.Env):
                 self._point_id_triggered = contact.collision1_name.split("::")[0]
                 return
     
-    def __init__(self, render_mode=None,sequence_length=1):
+    def robot_collison_callback(self,contacts:ContactsState):
+        for contact in contacts.states:
+            if contact.collision1_name.find("Maze") > -1:
+                self._robot_has_hit_wall = True
+                return
+            if contact.collision2_name.find("Maze") > -1:
+                self._robot_has_hit_wall = True
+                return
+    
+    def __init__(self, render_mode=None,sequence_length=1,stall_time_sec=10):
 
         # Observations are dictionaries with the agent's and the target's location.
         # Each location is encoded as an element of {0, ..., `size`}^2, i.e. MultiDiscrete([size, size]).
@@ -49,9 +58,12 @@ class Collect(gym.Env):
         
         print("High shape: ",high.shape)
         
+        self._stall_time_sec = stall_time_sec
+        
         self._point_id_triggered = ""
         
         self._point_collected = 0
+        self._robot_has_hit_wall = False
         
         self.observation_space = spaces.Box(low, high, dtype=np.float32)
         # We have 4 actions, corresponding to "right", "up", "left", "down"
@@ -100,7 +112,7 @@ class Collect(gym.Env):
             self._node.get_logger().info(f"Created subscription for point{i}")
             self._point_topics["point"+str(i)]=self._node.create_subscription(ContactsState,"/trigger"+str(i),self.point_callback,10)
         
-                
+        self._contact_topic = self._node.create_subscription(ContactsState,"/KapiBara/collision",self.robot_collison_callback,10)
         # create client for step control service for KapiBara robot
         self._robot = KapiBaraStepAgent(self._node,position=[0.0,0.0,0.0],rotation=[0.0,0.0,0],reload_agent=False,use_camera=True,max_linear_speed=0.25)
         # create client for service to control gazebo environment
@@ -138,9 +150,12 @@ class Collect(gym.Env):
         
         self._robot_data = np.zeros(self._robot_data.shape,dtype = np.float32)
         self._point_id_triggered = ""
+        self._robot_has_hit_wall = False
 
         observation = self._get_obs()
         info = self._get_info()
+        
+        self._timer = self._node.get_clock().now().to_msg().sec
 
         return observation, info
     
@@ -163,6 +178,8 @@ class Collect(gym.Env):
         observation = self._robot.get_observations()
         
         frame = self._robot.get_camera_frame()[-1]
+        
+        robot_position = self._sim.get_entity_state("kapibara")[0]
         
         # self._robot_data[:8] = observation[:8]
         # self._robot_data[8:] = frame[:]
@@ -190,17 +207,17 @@ class Collect(gym.Env):
         id = 0
         for distance in observation[0:4]:
             id+=1
-            if distance < 0.1:
+            if distance < 0.1 or self._robot_has_hit_wall:
                 reward = -0.5
                 self._node.get_logger().info(f"Robot hits the wall, terminated!, sensor id: {id}")
                 terminated = True
                 break
-
-        # if self._robot_data[11] < 0.1:
-        #     reward = -0.5
-        #     self._node.get_logger().info("Robot hits the wall, terminated!, back sensor!")
-        #     terminated = True
-                
+        
+        if self._robot_has_hit_wall:
+            reward = -0.5
+            self._node.get_logger().info("Robot hits the wall, terminated!")
+            terminated = True
+        
         info = self._get_info()
                 
         if len(self._point_id_triggered) > 0 :
@@ -213,6 +230,16 @@ class Collect(gym.Env):
             del self._point_topics[self._point_id_triggered]
                         
             self._point_id_triggered = ""
+        
+        if np.linalg.norm(self._last_robot_positon - robot_position) <= 0.015:
+            if self._node.get_clock().now().to_msg().sec - self._timer >= self._stall_time_sec:
+                terminated = True
+                self._node.get_logger().info("Robot has stalled!")
+                reward = -10.0
+        else:
+            self._timer = self._node.get_clock().now().to_msg().sec
+                
+        self._last_robot_positon = robot_position
          
         if self._point_collected == len(self.point_positions):
             done = True

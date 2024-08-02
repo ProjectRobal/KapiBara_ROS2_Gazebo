@@ -1,13 +1,13 @@
 from gymnasium.envs.registration import register
 
 register(
-     id="gym/SimpleMaze-v0",
+     id="gym/Maze-v0",
      entry_point="gym.environments.labirynth:Labirynth",
      kwargs={'maze': 'basic'}
 )
 
 register(
-     id="gym/PackCollect-v0",
+     id="gym/Collect-v0",
      entry_point="gym.environments.collect:Collect"
 )
 
