@@ -35,23 +35,6 @@
         </visual>
     </link>
 
-    <!-- FLOOR DISTANCE SENSOR -->
-
-    <joint name="floor_laser_joint" type="fixed">
-        <parent link="base"/>
-        <child link="floor_laser_link"/>
-        <origin xyz="0.11 0.0 0.12" rpy="${pi} 0 0"/>
-    </joint>
-
-    <link name="floor_laser_link">
-        <visual>
-            <geometry>
-                <box size="0.01 0.01 0.01" />
-            </geometry>
-            <material name="red" />
-        </visual>
-    </link>
-
 
     <!-- SIDE LEFT DISTANCE SENSOR -->
 
@@ -91,7 +74,6 @@
 
     <xacro:laser_sensor sensor_name="front_left" />
     <xacro:laser_sensor sensor_name="front_right" />
-    <xacro:laser_sensor sensor_name="floor" />
     <xacro:laser_sensor sensor_name="side_left" />
     <xacro:laser_sensor sensor_name="side_right" />
 

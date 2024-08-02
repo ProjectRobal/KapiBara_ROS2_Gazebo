@@ -202,10 +202,7 @@ class Collect(gym.Env):
         frame = self._robot.get_camera_frame()[-1]
         
         robot_position = self._sim.get_entity_state("kapibara")[0]
-        
-        # self._robot_data[:8] = observation[:8]
-        # self._robot_data[8:] = frame[:]
-        
+                
         self.append_observations(np.concatenate((observation[:8],frame)))
         
         #print(self._robot_data.shape)
@@ -257,7 +254,7 @@ class Collect(gym.Env):
         
         if np.linalg.norm(self._last_robot_positon - robot_position) <= 0.015:
             if self._node.get_clock().now().to_msg().sec - self._timer >= self._stall_time_sec:
-                #terminated = True
+                terminated = True
                 self._node.get_logger().info("Robot has stalled!")
                 reward = -10.0
         else:

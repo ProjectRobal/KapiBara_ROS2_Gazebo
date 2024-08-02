@@ -151,9 +151,9 @@ class Labirynth(gym.Env):
         
         observation = self._robot.get_observations()
         
-        observation[9:12] = robot_position[:]
+        observation[8:11] = robot_position[:]
                 
-        self.append_observations(observation[:11])
+        self.append_observations(observation)
         # We use `np.clip` to make sure we don't leave the grid
         
         # An episode is done iff the agent has reached the target

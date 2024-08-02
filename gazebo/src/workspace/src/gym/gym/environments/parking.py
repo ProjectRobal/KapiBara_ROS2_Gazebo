@@ -33,6 +33,15 @@ class Parking(gym.Env):
             if contact.collision2_name.find("kapibara") > -1:
                 self._point_id_triggered = contact.collision1_name.split("::")[0]
                 return
+            
+    def robot_collison_callback(self,contacts:ContactsState):
+        for contact in contacts.states:
+            if contact.collision1_name.find("Parking") > -1:
+                self._robot_has_hit_wall = True
+                return
+            if contact.collision2_name.find("Parking") > -1:
+                self._robot_has_hit_wall = True
+                return
     
     def __init__(self, render_mode=None,sequence_length=1):
 
@@ -49,6 +58,8 @@ class Parking(gym.Env):
         self._stall_timer = timer()
         
         self._point_id_triggered = ""
+        
+        self._robot_has_hit_wall = False
                 
         self.observation_space = spaces.Box(low, high, dtype=np.float32)
         # We have 4 actions, corresponding to "right", "up", "left", "down"
@@ -76,9 +87,6 @@ class Parking(gym.Env):
 
         self._node=Node("maze_env")
         
-        # run spin in seaparated thread
-        #self._spin_thread = Thread(target=rclpy.spin,args=(self._node,))
-        #self._spin_thread.start()
         # Start an Gazbo using proper launch file
         self._env = launch_environment("parking.one")
         self._env.start()
@@ -89,7 +97,7 @@ class Parking(gym.Env):
             self._node.get_logger().info(f"Created subscription for point{i}")
             self._point_topics["point"+str(i)]=self._node.create_subscription(ContactsState,"/trigger"+str(i),self.point_callback,10)
         
-                
+        self._contact_topic = self._node.create_subscription(ContactsState,"/KapiBara/collision",self.robot_collison_callback,10)
         # create client for step control service for KapiBara robot
         self._robot = KapiBaraStepAgent(self._node,position=[-0.2,0.0,0.0],rotation=[0.0,0.0,0],reload_agent=False,use_camera=False,max_linear_speed=0.25)
         # create client for service to control gazebo environment
@@ -121,6 +129,7 @@ class Parking(gym.Env):
         
         self._stage_number = 0
         self._point_id_triggered = ""
+        self._robot_has_hit_wall = False
         
         del self._point_topics
 
@@ -238,11 +247,10 @@ class Parking(gym.Env):
                     break
                 
         # check sensor data
-        
-        
-        if observation[11] < 0.1:
-            reward = - 1.0
-            self._node.get_logger().info("Robot hits the wall, terminated!, back sensor!")
+            
+        if self._robot_has_hit_wall:
+            reward = -1.0
+            self._node.get_logger().info("Robot hits the wall, terminated!")
             terminated = True
             
         if timer() - self._stall_timer > 60:
@@ -251,8 +259,8 @@ class Parking(gym.Env):
             self._node.get_logger().info("Robot timed out!")
             self._stall_timer = timer()
             
-        self._node.get_logger().info("Reward: "+str(reward))
-        self._node.get_logger().info("Observations: "+str(observation))
+        # self._node.get_logger().info("Reward: "+str(reward))
+        # self._node.get_logger().info("Observations: "+str(observation))
          
                 
         return self._get_obs(), reward, terminated, done, info
