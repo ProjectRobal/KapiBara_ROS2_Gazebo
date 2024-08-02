@@ -12,7 +12,9 @@ from rclpy.node import Node
 from std_srvs.srv import Empty
 
 from gazebo_msgs.srv import DeleteEntity
-from gazebo_msgs.srv import GetEntityState
+from gazebo_msgs.srv import GetEntityState,SetEntityState
+
+from gazebo_msgs.msg import EntityState
 
 class SimulationControl:
     def __init__(self,parent_node:Node):
@@ -52,7 +54,39 @@ class SimulationControl:
         
         # wait 60 seconds for service ready
         if not self._get_entity_srv.wait_for_service(60):
-            raise TimeoutError("Cannot connect to service: /delete_entity")
+            raise TimeoutError("Cannot connect to service: /gazebo/get_entity_state")
+        
+        self._set_entity_srv = self._node.create_client(SetEntityState,"/gazebo/set_entity_state")
+        
+        # wait 60 seconds for service ready
+        if not self._get_entity_srv.wait_for_service(60):
+            raise TimeoutError("Cannot connect to service: /gazebo/set_entity_state")
+        
+    def set_entity_position(self,name:str,positon:np.ndarray):
+        request = SetEntityState.Request()
+        
+        state = EntityState()
+        
+        state.name = name
+        
+        state.pose.position.x = positon[0]
+        state.pose.position.y = positon[1]
+        state.pose.position.z = positon[2]
+        
+        request.state = state
+        
+        future = self._set_entity_srv.call_async(request)
+        
+        while rclpy.ok():
+            rclpy.spin_once(self._node)
+            if future.done():
+                result = future.result()
+                
+                if result.success:
+                    self._node.get_logger().debug("Succesfully changed position of entity: "+name)
+                else:
+                    self._node.get_logger().error("Cannot update entity: "+name)
+                break
         
     def get_entity_state(self,name:str):
         
@@ -126,12 +160,13 @@ class SimulationControl:
         '''    
         self.pause()
         
-        future = self._reset_env_srv.call_async(Empty.Request())
+        # this breaks simulation, mainly a robot:
+        # future = self._reset_env_srv.call_async(Empty.Request())
         
-        while rclpy.ok():
-            rclpy.spin_once(self._node)
-            if future.done():
-                break
+        # while rclpy.ok():
+        #     rclpy.spin_once(self._node)
+        #     if future.done():
+        #         break
             
         future = self._reset_world_srv.call_async(Empty.Request())
         
@@ -139,8 +174,6 @@ class SimulationControl:
             rclpy.spin_once(self._node)
             if future.done():
                 break
-            
-        
             
         self.unpause()
         

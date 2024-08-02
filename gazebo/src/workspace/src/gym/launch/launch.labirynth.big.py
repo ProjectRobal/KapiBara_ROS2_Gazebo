@@ -73,18 +73,6 @@ def generate_launch_description():
     spawn_maze = Node(package='gazebo_ros', executable='spawn_entity.py',
                     arguments=["-file",os.path.join(get_package_share_directory(pkg_name),"props/Test_Maze/model.sdf"),"-entity","Maze","-timeout","240","-x","-3.330718","-y","-0.470162"],
                     output='screen')
-    
-    fusion = Node(
-        package="imu_filter_madgwick",
-        executable="imu_filter_madgwick_node",
-        parameters=[
-            {"use_mag":False}
-        ],
-        remappings=[
-            ('/imu/data_raw','/Gazebo/imu'),
-            ('/imu/data','/Gazebo/orientation')
-        ]
-    )
 
     
     # Run the node
@@ -103,8 +91,7 @@ def generate_launch_description():
                 spawn_mine
             ]
         ),
-        spawn_maze,
-        fusion
+        spawn_maze
     ])
 
 

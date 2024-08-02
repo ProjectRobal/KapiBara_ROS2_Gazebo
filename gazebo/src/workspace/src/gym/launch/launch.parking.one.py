@@ -85,18 +85,6 @@ def launch_setup(context):
                     arguments=["-file",os.path.join(get_package_share_directory(pkg_name),"props/Parking_1/model.sdf"),"-entity","Parking","-timeout","240"],
                     output='screen')
     
-    fusion = Node(
-        package="imu_filter_madgwick",
-        executable="imu_filter_madgwick_node",
-        parameters=[
-            {"use_mag":False}
-        ],
-        remappings=[
-            ('/imu/data_raw','/Gazebo/imu'),
-            ('/imu/data','/Gazebo/orientation')
-        ]
-    )
-    
     actions = []
     
     for i,(x,y) in enumerate(POINTS_POSITIONS):
@@ -121,7 +109,7 @@ def launch_setup(context):
             ]
         ))
 
-    return [node_robot_state_publisher,gazebo,spawn_maze,*actions,fusion]
+    return [node_robot_state_publisher,gazebo,spawn_maze,*actions]
 
 def generate_launch_description():
     opfunc = OpaqueFunction(function = launch_setup)

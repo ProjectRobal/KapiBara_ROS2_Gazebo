@@ -29,6 +29,7 @@ class Collect(gym.Env):
     ]
         
     def point_callback(self,contacts:ContactsState):
+    
         for contact in contacts.states:
             if contact.collision1_name.find("kapibara") > -1:
                 self._point_id_triggered = contact.collision2_name.split("::")[0]
@@ -46,7 +47,7 @@ class Collect(gym.Env):
                 self._robot_has_hit_wall = True
                 return
     
-    def __init__(self, render_mode=None,sequence_length=1,stall_time_sec=10):
+    def __init__(self, render_mode=None,sequence_length=1,stall_time_sec=30):
 
         # Observations are dictionaries with the agent's and the target's location.
         # Each location is encoded as an element of {0, ..., `size`}^2, i.e. MultiDiscrete([size, size]).
@@ -89,28 +90,16 @@ class Collect(gym.Env):
         rclpy.init()
 
         self._node=Node("maze_env")
-        
-        points=""
-        
-        points+=f"{self.point_positions[0][0]} {self.point_positions[0][1]}"
-        
-        for point in self.point_positions[1:]:
-            points+=f",{point[0]} {point[1]}"
-            
-        print(points)
-        
+                
         # run spin in seaparated thread
         #self._spin_thread = Thread(target=rclpy.spin,args=(self._node,))
         #self._spin_thread.start()
         # Start an Gazbo using proper launch file
-        self._env = launch_environment("collect.one",points=points)
+        self._env = launch_environment("collect.one",points_count=str(len(self.point_positions)))
         self._env.start()
+        
                 
         self._point_topics = {}
-        
-        for i in range(len(self.point_positions)):
-            self._node.get_logger().info(f"Created subscription for point{i}")
-            self._point_topics["point"+str(i)]=self._node.create_subscription(ContactsState,"/trigger"+str(i),self.point_callback,10)
         
         self._contact_topic = self._node.create_subscription(ContactsState,"/KapiBara/collision",self.robot_collison_callback,10)
         # create client for step control service for KapiBara robot
@@ -121,6 +110,30 @@ class Collect(gym.Env):
         
         self._sim.pause()
         self._sim.reset()
+        
+    def spawn_points(self):
+        points=""
+        
+        points+=f"{self.point_positions[0][0]} {self.point_positions[0][1]}"
+        
+        for point in self.point_positions[1:]:
+            points+=f",{point[0]} {point[1]}"
+            
+        spawn_points = launch_environment("collect.spawn.blocks",points=points)
+        spawn_points.start()
+        
+        spawn_points.join()
+        
+    def remove_points(self):
+        for point in self._point_topics.keys():
+            self._sim.remove_entity(point)
+        
+    def point_subscriptions(self):
+        
+        self._point_topics = {}
+        for i in range(len(self.point_positions)):
+            self._node.get_logger().info(f"Created subscription for point{i}")
+            self._point_topics["point"+str(i)]=self._node.create_subscription(ContactsState,"/trigger"+str(i),self.point_callback,10)
     
     def _get_obs(self):
         return self._robot_data
@@ -148,14 +161,25 @@ class Collect(gym.Env):
         self._node.get_logger().info("Resetting robot")
         self._robot.reset_agent()
         
+        self.remove_points()
+        
         self._robot_data = np.zeros(self._robot_data.shape,dtype = np.float32)
         self._point_id_triggered = ""
         self._robot_has_hit_wall = False
+        self._point_collected = 0
 
         observation = self._get_obs()
         info = self._get_info()
         
         self._timer = self._node.get_clock().now().to_msg().sec
+        
+        self._last_robot_positon = self._sim.get_entity_state("kapibara")[0]
+        
+        self.spawn_points()
+        
+        del self._point_topics
+        
+        self.point_subscriptions()
 
         return observation, info
     
@@ -165,9 +189,7 @@ class Collect(gym.Env):
     
     # that doesn't work as it should
     def step(self, action):
-        # Map the action (element of {0,1,2,3}) to the direction we walk in
-        
-        
+        # Map the action (element of {0,1,2,3}) to the direction we walk in        
         self._robot.move(action)
         self._sim.unpause()
         # wait couple of steps
@@ -220,20 +242,22 @@ class Collect(gym.Env):
         
         info = self._get_info()
                 
-        if len(self._point_id_triggered) > 0 :
+        if self._point_id_triggered in self._point_topics.keys():
             self._point_collected +=1
             reward = 0.5
             self._node.get_logger().info("Robot found a point"+self._point_id_triggered)
+                                    
+            #self._sim.set_entity_position(self._point_id_triggered,np.array([-100.0*(self._point_collected+1),-100.0,0.4]))
             
             self._sim.remove_entity(self._point_id_triggered)
             
             del self._point_topics[self._point_id_triggered]
-                        
+            
             self._point_id_triggered = ""
         
         if np.linalg.norm(self._last_robot_positon - robot_position) <= 0.015:
             if self._node.get_clock().now().to_msg().sec - self._timer >= self._stall_time_sec:
-                terminated = True
+                #terminated = True
                 self._node.get_logger().info("Robot has stalled!")
                 reward = -10.0
         else:

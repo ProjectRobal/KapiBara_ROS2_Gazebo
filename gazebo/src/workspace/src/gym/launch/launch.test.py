@@ -56,19 +56,6 @@ def generate_launch_description():
             get_package_share_directory(pkg_name), 'launch', 'spawn.robot.py',)])
         )
     
-    fusion = Node(
-        package="imu_filter_madgwick",
-        executable="imu_filter_madgwick_node",
-        parameters=[
-            {"use_mag":False}
-        ],
-        remappings=[
-            ('/imu/data_raw','/Gazebo/imu'),
-            ('/imu/data','/Gazebo/orientation')
-        ]
-    )
-
-    
     # Run the node
     return LaunchDescription([
         DeclareLaunchArgument(
@@ -78,7 +65,6 @@ def generate_launch_description():
       ),
         gazebo,
         node_robot_state_publisher,
-        fusion,
         robot
     ])
 
