@@ -1,1 +1,0 @@
-/app/src/workspace/build/kapibara_interfaces/rosidl_generator_cpp/kapibara_interfaces/msg/diff_encoder.hpp

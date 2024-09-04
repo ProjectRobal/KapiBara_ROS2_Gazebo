@@ -2,6 +2,10 @@
 __pycache__/
 *.py[cod]
 
+gazebo/src/workspace/log/*
+gazebo/src/workspace/install/*
+gazebo/src/workspace/build/*
+
 # C extensions
 *.so
 

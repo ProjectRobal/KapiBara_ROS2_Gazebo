@@ -1,8 +1,0 @@
-source;share/kapibara_mind/hook/cmake_prefix_path.ps1
-source;share/kapibara_mind/hook/cmake_prefix_path.dsv
-source;share/kapibara_mind/hook/cmake_prefix_path.sh
-source;share/kapibara_mind/local_setup.bash
-source;share/kapibara_mind/local_setup.dsv
-source;share/kapibara_mind/local_setup.ps1
-source;share/kapibara_mind/local_setup.sh
-source;share/kapibara_mind/local_setup.zsh

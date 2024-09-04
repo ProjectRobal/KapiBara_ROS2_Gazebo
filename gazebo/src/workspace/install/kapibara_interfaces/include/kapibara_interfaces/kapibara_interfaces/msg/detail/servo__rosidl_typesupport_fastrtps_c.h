@@ -1,1 +1,0 @@
-/app/src/workspace/build/kapibara_interfaces/rosidl_typesupport_fastrtps_c/kapibara_interfaces/msg/detail/servo__rosidl_typesupport_fastrtps_c.h

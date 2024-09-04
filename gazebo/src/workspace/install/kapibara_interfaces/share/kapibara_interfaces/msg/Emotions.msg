@@ -1,1 +1,0 @@
-/app/src/workspace/src/kapibara_interfaces/msg/Emotions.msg

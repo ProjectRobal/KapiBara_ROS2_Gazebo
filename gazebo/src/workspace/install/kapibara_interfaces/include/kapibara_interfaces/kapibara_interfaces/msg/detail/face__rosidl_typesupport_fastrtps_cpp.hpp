@@ -1,1 +1,0 @@
-/app/src/workspace/build/kapibara_interfaces/rosidl_typesupport_fastrtps_cpp/kapibara_interfaces/msg/detail/face__rosidl_typesupport_fastrtps_cpp.hpp

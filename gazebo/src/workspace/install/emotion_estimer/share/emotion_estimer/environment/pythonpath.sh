@@ -1,1 +1,0 @@
-/app/src/workspace/build/emotion_estimer/ament_cmake_environment_hooks/pythonpath.sh

@@ -1,1 +1,0 @@
-/app/src/workspace/build/emotion_estimer/ament_cmake_core/emotion_estimerConfig.cmake

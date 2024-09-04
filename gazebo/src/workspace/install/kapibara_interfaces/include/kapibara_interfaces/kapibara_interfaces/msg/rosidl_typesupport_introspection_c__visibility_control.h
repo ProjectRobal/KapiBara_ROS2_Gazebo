@@ -1,1 +1,0 @@
-/app/src/workspace/build/kapibara_interfaces/rosidl_typesupport_introspection_c/kapibara_interfaces/msg/rosidl_typesupport_introspection_c__visibility_control.h

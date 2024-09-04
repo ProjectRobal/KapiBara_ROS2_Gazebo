@@ -1,1 +1,0 @@
-/app/src/workspace/build/kapibara_interfaces/rosidl_generator_cpp/kapibara_interfaces/msg/detail/vector2_di__builder.hpp
