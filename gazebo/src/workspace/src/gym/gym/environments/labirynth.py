@@ -49,19 +49,15 @@ class Labirynth(gym.Env):
         self._stall_time_sec = stall_time_sec
       
         self.observation_space = spaces.Box(low, high, dtype=np.float32)
-        # We have 4 actions, corresponding to "right", "up", "left", "down"
-        self.action_space = spaces.Discrete(4)
+        # We have 4 actions, corresponding to "right", "up", "left"
+        self.action_space = spaces.Discrete(3)
 
-        """
-        The following dictionary maps abstract actions from `self.action_space` to
-        the direction we will walk in if that action is taken.
-        I.e. 0 corresponds to "right", 1 to "up" etc.
-        """
+        
         self._action_to_direction = {
             0: np.array([1, 0]),
             1: np.array([0, 1]),
-            2: np.array([-1, 0]),
-            3: np.array([0, -1]),
+            # 2: np.array([-1, 0]),
+            2: np.array([0, -1]),
         }
 
         self.render_mode = render_mode
@@ -139,6 +135,8 @@ class Labirynth(gym.Env):
     def step(self, action):
         # Map the action (element of {0,1,2,3}) to the direction we walk in
         
+        if action >=1:
+            action += 1
         
         self._robot.move(action)
         self._sim.unpause()
