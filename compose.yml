@@ -1,26 +1,30 @@
 version: '3.9'
 
 networks:
-  internal:
-    name: "robal_internal"
-  external:
-    name: "robal_external"
+  internet:
+    driver: bridge
+  internet_2:
     driver: bridge
 
 services:
   gazebo:
     container_name: kapibara_gazeboo
-    network_mode: host
+    # network_mode: host
+    networks:
+      - internet
     build:
-      dockerfile: ./Dockerfile
+      dockerfile: ./Dockerfile.prod
       context: ./gazebo
     env_file:
       - ./gazebo/env/env
+    environment:
+      - GAZEBO_MASTER_URI = http://127.0.0.1:11345
+      - ROS_DOMAIN_ID = 0
     volumes:
       - ./gazebo/entrypoint.sh:/entrypoint.sh:rwx
       - ./gazebo/commands/:/app/cmd
       - ./gazebo/dependencies/:/app/dep
-      - ./gazebo/src:/app/src:rw
+      # - ./gazebo/src:/app/src:rw
       - ./gazebo/dependencies/rosdep_package.list:/etc/ros/rosdep/sources.list.d/20-default.list
       - /dev/shm:/dev/shm
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
@@ -32,4 +36,33 @@ services:
 
     group_add:
       - video
-    
+
+  gazebo_1:
+    container_name: kapibara_gazeboo_2
+    # network_mode: host
+    networks:
+      - internet_2
+    build:
+      dockerfile: ./Dockerfile.prod
+      context: ./gazebo
+    env_file:
+      - ./gazebo/env/env
+    environment:
+      - GAZEBO_MASTER_URI = http://127.0.0.1:11346
+      - ROS_DOMAIN_ID = 1
+    volumes:
+      - ./gazebo/entrypoint.sh:/entrypoint.sh:rwx
+      - ./gazebo/commands/:/app/cmd
+      - ./gazebo/dependencies/:/app/dep
+      # - ./gazebo/src:/app/src:rw
+      - ./gazebo/dependencies/rosdep_package.list:/etc/ros/rosdep/sources.list.d/20-default.list
+      - /dev/shm:/dev/shm
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+
+    devices:
+      - "/dev/kfd:/dev/kfd"
+      - "/dev/dri/:/dev/dri/"
+      - /dev/snd:/dev/snd
+
+    group_add:
+      - video

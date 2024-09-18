@@ -9,13 +9,13 @@ from protorl.policies.discrete import DiscretePolicy
 # from protorl.utils.network_utils import make_dqn_networks
 from protorl.wrappers.common import make_env
 from protorl.memory.generic import initialize_memory
-from protorl.learner.esp import ESPLearner as Learner
+from protorl.learner.dqn import DQNLearner as Learner
 
-from protorl.agents.esp import ESPAgent as Agent
-from protorl.actor.esp import ESPActor as Actor
-from protorl.loops.simple import EpisodeLoop
-from protorl.utils.network_utils import make_genetic_networks,make_esp_networks
-from protorl.utils.initializers import he
+from protorl.agents.dqn import DQNAgent as Agent
+from protorl.actor.dqn import DQNActor as Actor
+from protorl.loops.single import EpisodeLoop
+from protorl.utils.network_utils import make_genetic_networks,make_esp_networks,make_dqn_networks
+# from protorl.utils.initializers import he
 
 
 
@@ -33,36 +33,48 @@ def main():
     
     env_name = 'gym/Maze-v0'
     # env_name = 'PongNoFrameskip-v4'
-    use_prioritization = True
+    use_prioritization = False
     use_double = False
     use_dueling = False
     use_atari = False
-    env = make_env(env_name,sequence_length=4)
+    env = make_env(env_name,sequence_length=1)
     
-    n_games = 1500
+    n_games = 200
     bs = 64
     # 0.3, 0.5 works okay for cartpole
     # 0.25, 0.25 doesn't seem to work
     # 0.25, 0.75 doesn't work
+    memory = initialize_memory(max_size=50_000,
+                               obs_shape=env.observation_space.shape,
+                               batch_size=bs,
+                               n_actions=env.action_space.n,
+                               action_space='discrete',
+                               prioritized=use_prioritization,
+                               alpha=0.25,
+                               beta=0.25
+                               )
 
-    policy = DiscretePolicy()
+    policy = EpsilonGreedyPolicy(n_actions=env.action_space.n, eps_dec=1e-4)
 
-    base,networks = make_esp_networks(env,count=10,hidden_layers=[4096,4096])
-        
-    actor = Actor(base,networks, policy)
-    
-    actor.shuttle()
-    
-    actor.reset()
-        
-    learner = Learner(mutation_probability=0.1,members_to_keep=4)
+    q_eval, q_target = make_dqn_networks(env, use_double=use_double,
+                                         use_dueling=use_dueling,
+                                         hidden_layers=[2048],
+                                         use_atari=use_atari)
+    dqn_actor = Actor(q_eval, q_target, policy)
+    q_eval, q_target = make_dqn_networks(env, use_double=use_double,
+                                         use_dueling=use_dueling,
+                                         hidden_layers=[2048],
+                                         use_atari=use_atari)
+    dqn_learner = Learner(q_eval, q_target,
+                          prioritized=use_prioritization, lr=1e-4)
 
-    agent = Agent(actor, learner,initializer=he)
-    
+    agent = Agent(dqn_actor, dqn_learner, prioritized=use_prioritization)
     sample_mode = 'prioritized' if use_prioritization else 'uniform'
-    ep_loop = EpisodeLoop(agent, env, sample_mode=sample_mode,
-                          prioritized=use_prioritization,load_checkpoint = False)
+    ep_loop = EpisodeLoop(agent, env, memory, sample_mode=sample_mode,
+                          prioritized=use_prioritization,
+                          load_checkpoint=False,filename="/app/src/dqn_simple_maze.csv")
     scores, steps_array = ep_loop.run(n_games)
+            
 
 # def main():
 #     env = gymnasium.make("gym/SimpleMaze-v0")

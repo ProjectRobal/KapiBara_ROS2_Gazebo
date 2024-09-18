@@ -8,7 +8,7 @@ arg=$1
 
 if [ "$arg" = "start" ]; then
 
-docker compose -f compose.yml up
+docker compose -f compose.yml up --remove-orphans
 
 elif [ "$arg" = "purge" ]; then
 
