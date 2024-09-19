@@ -13,4 +13,4 @@ rosdep install --from-paths /app/src/workspace/src --ignore-src -r -y -q
 
 python3 -m pip install -e ./workspace/src/ProtoRL
 
-ros2 launch ./launch/launch1.py
+ros2 launch ./launch/launch3.py

@@ -5,11 +5,14 @@ networks:
     driver: bridge
   internet_2:
     driver: bridge
+  internet_3:
+    driver: bridge
 
 services:
   gazebo:
     container_name: kapibara_gazeboo
     # network_mode: host
+    image: gazebo_ros
     networks:
       - internet
     build:
@@ -21,6 +24,8 @@ services:
       - GAZEBO_MASTER_URI = http://127.0.0.1:11345
       - ROS_DOMAIN_ID = 0
     volumes:
+      - ./gazebo/models:/app/src/models
+      - ./gazebo/scores:/app/models
       - ./gazebo/entrypoint.sh:/entrypoint.sh:rwx
       - ./gazebo/commands/:/app/cmd
       - ./gazebo/dependencies/:/app/dep
@@ -42,16 +47,56 @@ services:
     # network_mode: host
     networks:
       - internet_2
-    build:
-      dockerfile: ./Dockerfile.prod
-      context: ./gazebo
+    image: gazebo_ros
+    depends_on:
+      - gazebo
+    # build:
+    #   dockerfile: ./Dockerfile.prod
+    #   context: ./gazebo
     env_file:
       - ./gazebo/env/env
     environment:
       - GAZEBO_MASTER_URI = http://127.0.0.1:11346
       - ROS_DOMAIN_ID = 1
     volumes:
-      - ./gazebo/entrypoint.sh:/entrypoint.sh:rwx
+      - ./gazebo/models:/app/src/models
+      - ./gazebo/scores:/app/models
+      - ./gazebo/entrypoint1.sh:/entrypoint.sh:rwx
+      - ./gazebo/commands/:/app/cmd
+      - ./gazebo/dependencies/:/app/dep
+      # - ./gazebo/src:/app/src:rw
+      - ./gazebo/dependencies/rosdep_package.list:/etc/ros/rosdep/sources.list.d/20-default.list
+      - /dev/shm:/dev/shm
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+
+    devices:
+      - "/dev/kfd:/dev/kfd"
+      - "/dev/dri/:/dev/dri/"
+      - /dev/snd:/dev/snd
+
+    group_add:
+      - video
+
+  gazebo_2:
+    container_name: kapibara_gazeboo_3
+    # network_mode: host
+    networks:
+      - internet_3
+    image: gazebo_ros
+    depends_on:
+      - gazebo
+    # build:
+    #   dockerfile: ./Dockerfile.prod
+    #   context: ./gazebo
+    env_file:
+      - ./gazebo/env/env
+    environment:
+      - GAZEBO_MASTER_URI = http://127.0.0.1:11347
+      - ROS_DOMAIN_ID = 2
+    volumes:
+      - ./gazebo/models:/app/src/models
+      - ./gazebo/scores:/app/models
+      - ./gazebo/entrypoint2.sh:/entrypoint.sh:rwx
       - ./gazebo/commands/:/app/cmd
       - ./gazebo/dependencies/:/app/dep
       # - ./gazebo/src:/app/src:rw

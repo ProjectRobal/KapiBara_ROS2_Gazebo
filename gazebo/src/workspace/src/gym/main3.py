@@ -72,7 +72,7 @@ def main():
     sample_mode = 'prioritized' if use_prioritization else 'uniform'
     ep_loop = EpisodeLoop(agent, env, memory, sample_mode=sample_mode,
                           prioritized=use_prioritization,
-                          load_checkpoint=False,filename="/app/models/dqn_simple_maze.csv")
+                          load_checkpoint=False,filename="/app/src/dqn_simple_maze.csv")
     scores, steps_array = ep_loop.run(n_games)
             
 
