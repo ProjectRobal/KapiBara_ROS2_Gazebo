@@ -231,7 +231,7 @@ class KapiBaraStepAgent:
             
             if process.exitcode is None or process.exitcode != 0:
                 self._node.get_logger().info("Failed to reset robot, trying again!")
-                process.kill()
+                process.terminate()
             else:
                 reseted_succesfuly = True
                 self._node.get_logger().info("Robot restarted succesfully")

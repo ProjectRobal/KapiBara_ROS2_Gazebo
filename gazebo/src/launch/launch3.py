@@ -37,7 +37,7 @@ def generate_launch_description():
         ]
     ),
         launch_arguments={
-            "exec":"main2.py"
+            "exec":"main3.py"
         }.items()
     )
     

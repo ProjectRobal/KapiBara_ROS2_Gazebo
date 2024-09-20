@@ -200,7 +200,7 @@ class Labirynth(gym.Env):
             done = True
             self._node.get_logger().info("Robot has found the target!")
             self._trigger0_triggered = False
-            reward = 1.0
+            reward = 1000.0
         else:
             done = False
             
