@@ -32,7 +32,7 @@ def main():
  
     env = make_env(env_name,sequence_length=1)
     
-    n_games = 200
+    n_games = 4000
     bs = 64
     # 0.3, 0.5 works okay for cartpole
     # 0.25, 0.25 doesn't seem to work

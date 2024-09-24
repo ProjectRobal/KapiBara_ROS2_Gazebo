@@ -72,7 +72,7 @@ def main():
     agent = Agent(actor, learner)
 
     ep_loop = EpisodeLoop(agent, env, memory, n_epochs, T, batch_size,
-                          n_threads=n_threads, clip_reward=True,
+                          n_threads=n_threads, clip_reward=False,
                           extra_functionality=[agent.anneal_policy_clip],filename="/app/models/ppo_simple_maze.csv")
 
     scores, steps_array = ep_loop.run(n_games)

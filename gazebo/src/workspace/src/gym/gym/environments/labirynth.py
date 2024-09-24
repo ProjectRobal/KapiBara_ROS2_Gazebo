@@ -179,10 +179,10 @@ class Labirynth(gym.Env):
                 self._node.get_logger().info(f"Robot hits the wall, terminated!, sensor id: {id}")
                 terminated = True
                 break
-            elif distance < 0.35:
-                reward = -0.5
-                self._node.get_logger().info(f"Robot sticks to wall!, sensor id: {id}")
-                break
+            # elif distance < 0.35:
+            #     reward = -0.5
+            #     self._node.get_logger().info(f"Robot sticks to wall!, sensor id: {id}")
+            #     break
         
         if action == 1:
             self._node.get_logger().info("Robot moved backward!")
