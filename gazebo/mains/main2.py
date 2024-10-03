@@ -29,7 +29,7 @@ def main():
     
     env_name = 'gym/Maze-v0'
    
-    env = make_env(env_name,sequence_length=1)
+    env = make_env(env_name,sequence_length=1,reward_type="distance")
     
     n_games = 4000
     bs = 64
