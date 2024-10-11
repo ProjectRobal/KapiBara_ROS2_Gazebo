@@ -2,8 +2,8 @@ from gymnasium.envs.registration import register
 
 register(
      id="gym/Maze-v0",
-     entry_point="gym.environments.labirynth:Labirynth",
-     kwargs={'maze': 'basic'}
+     entry_point="gym.environments.labirynth:Labirynth"
+     # kwargs={'maze': 'basic'}
 )
 
 register(

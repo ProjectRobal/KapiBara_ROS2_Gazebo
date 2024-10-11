@@ -7,6 +7,8 @@ cd /app/src
 
 sudo apt-get update
 
+rosdep update
+
 # rosdep update
 
 rosdep install --from-paths /app/src/workspace/src --ignore-src -r -y -q

@@ -5,7 +5,8 @@ __pycache__/
 gazebo/src/workspace/log/*
 gazebo/src/workspace/install/*
 gazebo/src/workspace/build/*
-
+gazebo/scores
+gazebo/models
 # C extensions
 *.so
 

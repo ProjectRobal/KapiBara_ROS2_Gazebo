@@ -1,9 +1,16 @@
-FROM osrf/ros:iron-desktop
+FROM althack/ros2:iron-cuda-gazebo
+# FROM althack/ros2:iron-gazebo
+
 
 SHELL ["/bin/bash", "-c"]
 
 
 ENV DEBIAN_FRONTEND noninteractive
+
+ENV NVIDIA_VISIBLE_DEVICES \
+    ${NVIDIA_VISIBLE_DEVICES:-all}
+ENV NVIDIA_DRIVER_CAPABILITIES \
+    ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics
 
 COPY ./dependencies /app/dep
 

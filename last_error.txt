@@ -1,0 +1,16 @@
+kapibara_gazeboo  | [main.py-1] /app/src/workspace/src/ProtoRL/protorl/utils/common.py:79: UserWarning: Creating a tensor from a list of numpy.ndarrays is extremely slow. Please consider converting the list to a single numpy.ndarray with numpy.array() before converting to a tensor. (Triggered internally at ../torch/csrc/utils/tensor_new.cpp:278.)
+kapibara_gazeboo  | [main.py-1]   adv = T.tensor(adv, dtype=T.double,
+kapibara_gazeboo  | [main.py-1] Traceback (most recent call last):
+kapibara_gazeboo  | [main.py-1]   File "/app/src/workspace/install/gym/lib/gym/main.py", line 101, in <module>
+kapibara_gazeboo  | [main.py-1]     main()
+kapibara_gazeboo  | [main.py-1]   File "/app/src/workspace/install/gym/lib/gym/main.py", line 78, in main
+kapibara_gazeboo  | [main.py-1]     scores, steps_array = ep_loop.run(n_games)
+kapibara_gazeboo  | [main.py-1]   File "/app/src/workspace/src/ProtoRL/protorl/loops/ppo_episode.py", line 65, in run
+kapibara_gazeboo  | [main.py-1]     self.agent.update(transitions, batches)
+kapibara_gazeboo  | [main.py-1]   File "/app/src/workspace/src/ProtoRL/protorl/agents/ppo.py", line 22, in update
+kapibara_gazeboo  | [main.py-1]     self.learner.update(transitions, batches)
+kapibara_gazeboo  | [main.py-1]   File "/app/src/workspace/src/ProtoRL/protorl/learner/ppo.py", line 34, in update
+kapibara_gazeboo  | [main.py-1]     adv, returns = calc_adv_and_returns(values, values_, r, d)
+kapibara_gazeboo  | [main.py-1]   File "/app/src/workspace/src/ProtoRL/protorl/utils/common.py", line 81, in calc_adv_and_returns
+kapibara_gazeboo  | [main.py-1]     returns = adv + values.unsqueeze(2)
+kapibara_gazeboo  | [main.py-1] IndexError: Dimension out of range (expected to be in range of [-2, 1], but got 2)

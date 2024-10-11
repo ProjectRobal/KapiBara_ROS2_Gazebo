@@ -29,7 +29,7 @@ def main():
     
     env_name = 'gym/Maze-v0'
    
-    env = make_env(env_name,sequence_length=1,reward_type="distance")
+    env = make_env(env_name,sequence_length=1,reward_type="distance",maze="normal")
     
     n_games = 4000
     bs = 64
@@ -39,7 +39,7 @@ def main():
 
     policy = DiscretePolicy()
 
-    networks = make_genetic_networks(env,count=10)
+    networks = make_genetic_networks(env,count=40,hidden_layers=[4096,4096])
     
     genetic_actor = Actor(networks, policy)
     
