@@ -80,13 +80,22 @@ class SimulationControl:
         while rclpy.ok():
             rclpy.spin_once(self._node)
             if future.done():
-                result = future.result()
+                try:
+                    result = future.result(timeout=30)
                 
-                if result.success:
-                    self._node.get_logger().debug("Succesfully changed position of entity: "+name)
-                else:
-                    self._node.get_logger().error("Cannot update entity: "+name)
-                break
+                    if result.success:
+                        self._node.get_logger().debug("Succesfully changed position of entity: "+name)
+                        return True
+                    else:
+                        self._node.get_logger().error("Cannot update entity: "+name)
+                    break
+                except TimeoutError:
+                    self._node.get_logger().error("Enity spawn timeout! "+name)
+                    return False
+            else:
+                return False
+        
+        return True
         
     def get_entity_state(self,name:str):
         

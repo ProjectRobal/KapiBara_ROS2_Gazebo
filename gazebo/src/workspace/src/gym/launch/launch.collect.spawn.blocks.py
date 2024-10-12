@@ -67,7 +67,7 @@ def launch_setup(context):
     for i,(x,y) in enumerate(point_coords):
         
         spawn_mine = Node(package='gazebo_ros', executable='spawn_entity.py',
-                    arguments=["-topic",f"/point{i}/robot_description","-entity","point"+str(i),"-timeout","240","-x",str(x),"-y",str(y),"-z","0.4"],
+                    arguments=["-topic",f"/point{i}/robot_description","-entity","point"+str(i),"-timeout","240","-x",str(x),"-y",str(y),"-z","0.5"],
                     output='screen')
         actions.append(GroupAction(
             actions=[

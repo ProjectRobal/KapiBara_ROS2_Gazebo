@@ -55,49 +55,49 @@ services:
     group_add:
       - video
 
-  gazebo_1:
-    container_name: kapibara_gazeboo_2
-    # network_mode: host
-    networks:
-      - internet_2
-    image: gazebo_ros
-    depends_on:
-      - gazebo
-    # build:
-    #   dockerfile: ./Dockerfile.prod
-    #   context: ./gazebo
-    env_file:
-      - ./gazebo/env/env
-    environment:
-      - GAZEBO_MASTER_URI = http://127.0.0.1:11346
-      - ROS_DOMAIN_ID = 1
-    volumes:
-      - ./gazebo/models:/app/src/models
-      - ./gazebo/scores:/app/models
-      - ./gazebo/entrypoint.sh:/entrypoint.sh:rwx
-      - ./gazebo/commands/:/app/cmd
-      - ./gazebo/dependencies/:/app/dep
-      - ./gazebo/mains/main2.py:/app/src/workspace/src/gym/main.py
-      # - ./gazebo/src:/app/src:rw
-      - ./gazebo/dependencies/rosdep_package.list:/etc/ros/rosdep/sources.list.d/20-default.list
-      - /dev/:/dev/
-      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+  # gazebo_1:
+  #   container_name: kapibara_gazeboo_2
+  #   # network_mode: host
+  #   networks:
+  #     - internet_2
+  #   image: gazebo_ros
+  #   depends_on:
+  #     - gazebo
+  #   # build:
+  #   #   dockerfile: ./Dockerfile.prod
+  #   #   context: ./gazebo
+  #   env_file:
+  #     - ./gazebo/env/env
+  #   environment:
+  #     - GAZEBO_MASTER_URI = http://127.0.0.1:11346
+  #     - ROS_DOMAIN_ID = 1
+  #   volumes:
+  #     - ./gazebo/models:/app/src/models
+  #     - ./gazebo/scores:/app/models
+  #     - ./gazebo/entrypoint.sh:/entrypoint.sh:rwx
+  #     - ./gazebo/commands/:/app/cmd
+  #     - ./gazebo/dependencies/:/app/dep
+  #     - ./gazebo/mains/main2.py:/app/src/workspace/src/gym/main.py
+  #     # - ./gazebo/src:/app/src:rw
+  #     - ./gazebo/dependencies/rosdep_package.list:/etc/ros/rosdep/sources.list.d/20-default.list
+  #     - /dev/:/dev/
+  #     - /tmp/.X11-unix:/tmp/.X11-unix:rw
 
-    deploy:
-        resources:
-          reservations:
-            devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
+  #   deploy:
+  #       resources:
+  #         reservations:
+  #           devices:
+  #           - driver: nvidia
+  #             count: all
+  #             capabilities: [gpu]
 
-    devices:
-      # - "/dev/kfd:/dev/kfd"
-      - "/dev/dri/:/dev/dri/"
-      - /dev/snd:/dev/snd
+  #   devices:
+  #     # - "/dev/kfd:/dev/kfd"
+  #     - "/dev/dri/:/dev/dri/"
+  #     - /dev/snd:/dev/snd
 
-    group_add:
-      - video
+  #   group_add:
+  #     - video
 
   # gazebo_2:
   #   container_name: kapibara_gazeboo_3

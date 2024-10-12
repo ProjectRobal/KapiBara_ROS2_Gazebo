@@ -16,10 +16,12 @@ from gym.utils.utils_sim import SimulationControl
 
 from threading import Thread
 
-from copy import copy
+from copy import copy,deepcopy
 
 class Collect(gym.Env):
     metadata = {"render_modes": ["human"]}
+
+    REWARD_TYPE = Literal["normal","genetic"]
     
     point_positions = [
         np.array([-1.86847, 2.12847]),
@@ -47,11 +49,13 @@ class Collect(gym.Env):
                 self._robot_has_hit_wall = True
                 return
     
-    def __init__(self, render_mode=None,sequence_length=1,stall_time_sec=30):
+    def __init__(self, render_mode=None,sequence_length=1,reward_type:Literal[REWARD_TYPE] = 'normal',stall_time_sec=30):
 
         # Observations are dictionaries with the agent's and the target's location.
         # Each location is encoded as an element of {0, ..., `size`}^2, i.e. MultiDiscrete([size, size]).
         # Inputs are 4 laser sensors distance, quanterion
+
+        self.reward_type = reward_type
         
         high = np.array([1.0,1.0,1.0,1.0 , 1.0,1.0,1.0,1.0 , *([1.0]*40*30*3) ]*sequence_length,dtype=np.float32)
         low = np.array([0.0,0.0,0.0,0.0 , -1.0,-1.0,-1.0,-1.0 , *([0.0]*40*30*3)]*sequence_length,dtype=np.float32)
@@ -97,16 +101,23 @@ class Collect(gym.Env):
         # Start an Gazbo using proper launch file
         self._env = launch_environment("collect.one",points_count=str(len(self.point_positions)))
         self._env.start()
+
+        self.distance_to_closest_point = np.linalg.norm(self.point_positions[1])
+        self.id_of_closed_point = 1
+
+        self.current_point_positions = deepcopy(self.point_positions)
         
                 
         self._point_topics = {}
         
         self._contact_topic = self._node.create_subscription(ContactsState,"/KapiBara/collision",self.robot_collison_callback,10)
         # create client for step control service for KapiBara robot
-        self._robot = KapiBaraStepAgent(self._node,position=[0.0,0.0,0.0],rotation=[0.0,0.0,0],reload_agent=False,use_camera=True,max_linear_speed=0.25)
+        self._robot = KapiBaraStepAgent(self._node,position=[0.0,0.0,0.0],rotation=[0.0,0.0,0],reload_agent=False,use_camera=True,max_linear_speed=0.5,max_angular_speed=2.5)
         # create client for service to control gazebo environment
         
         self._sim = SimulationControl(self._node)
+
+        self._start = True
         
         self._sim.pause()
         self._sim.reset()
@@ -122,7 +133,12 @@ class Collect(gym.Env):
         spawn_points = launch_environment("collect.spawn.blocks",points=points)
         spawn_points.start()
         
-        spawn_points.join()
+        spawn_points.join(timeout=40)
+
+        if spawn_points.exitcode is None:
+            return False
+        
+        return True
         
     def remove_points(self):
         for point in self._point_topics.keys():
@@ -139,15 +155,17 @@ class Collect(gym.Env):
         return self._robot_data
 
     def _get_info(self):
-        position = self._robot_data[8:10]
+
+        position = self._sim.get_entity_state("kapibara")[0]
+        # position = self._robot_data[8:10]
         
         if len(position) < 2:
             return {}
         
         output = []
         
-        for point in self.point_positions:
-            output.append(np.linalg.norm(point - position))
+        for point in self.current_point_positions:
+            output.append(np.linalg.norm(point - position[:2]))
         # get information distance from obstacltes:
         return {"distances_to_points":output}
         
@@ -160,13 +178,17 @@ class Collect(gym.Env):
         self._sim.reset()
         self._node.get_logger().info("Resetting robot")
         self._robot.reset_agent()
+
         
-        self.remove_points()
+        
+        #self.remove_points()
         
         self._robot_data = np.zeros(self._robot_data.shape,dtype = np.float32)
         self._point_id_triggered = ""
         self._robot_has_hit_wall = False
         self._point_collected = 0
+
+        self.current_point_positions = deepcopy(self.point_positions)
 
         observation = self._get_obs()
         info = self._get_info()
@@ -174,8 +196,19 @@ class Collect(gym.Env):
         self._timer = self._node.get_clock().now().to_msg().sec
         
         self._last_robot_positon = self._sim.get_entity_state("kapibara")[0]
+
+        if self._start:
+
+            self.spawn_points()
+            self._start = False
+
+        for id,point in enumerate(self.point_positions):
+            name = "point"+str(id)
+            
+            self._sim.set_entity_position(name,[point[0],point[1],0.5])
+            
         
-        self.spawn_points()
+        #self.spawn_points()
         
         del self._point_topics
         
@@ -220,20 +253,43 @@ class Collect(gym.Env):
         # When robot hits the wall it will get -0.5 reward and environment is terminated
         
         # default reward for every step
-        reward = -0.04
+        reward = 0
+
+        if self.reward_type == 'normal':
+            reward = -0.1
+
+            distances = self._get_info()["distances_to_points"]
+
+            new_id_of_closet_point = min(range(len(distances)),key =lambda x: distances[x])
+
+            if self.id_of_closed_point == new_id_of_closet_point:
+                distance = distances[self.id_of_closed_point]
+
+                if distance < self.distance_to_closest_point:
+                    self._node.get_logger().info("Robot got closer to point")
+                    reward = 0.25
+                else:
+                    self._node.get_logger().info("Robot got furhter from point") 
+
+                self.distance_to_closest_point = distance
+
+            else:
+                self._node.get_logger().info("New closet points id: "+str(new_id_of_closet_point))
+                self.id_of_closed_point = new_id_of_closet_point
+                self.distance_to_closest_point = distances[self.id_of_closed_point]
         
         # check sensor data
         id = 0
         for distance in observation[0:4]:
             id+=1
             if distance < 0.1 or self._robot_has_hit_wall:
-                reward = -0.5
+                reward += -0.5
                 self._node.get_logger().info(f"Robot hits the wall, terminated!, sensor id: {id}")
                 terminated = True
                 break
         
         if self._robot_has_hit_wall:
-            reward = -0.5
+            reward += -0.5
             self._node.get_logger().info("Robot hits the wall, terminated!")
             terminated = True
         
@@ -241,14 +297,18 @@ class Collect(gym.Env):
                 
         if self._point_id_triggered in self._point_topics.keys():
             self._point_collected +=1
-            reward = 0.5
+            reward = 5
             self._node.get_logger().info("Robot found a point"+self._point_id_triggered)
                                     
             #self._sim.set_entity_position(self._point_id_triggered,np.array([-100.0*(self._point_collected+1),-100.0,0.4]))
             
-            self._sim.remove_entity(self._point_id_triggered)
+            # self._sim.remove_entity(self._point_id_triggered)
+
+            self._sim.set_entity_position(self._point_id_triggered,[10.0,10.0,0.0])
             
             del self._point_topics[self._point_id_triggered]
+
+            del self.current_point_positions[self.id_of_closed_point]
             
             self._point_id_triggered = ""
         
@@ -264,7 +324,7 @@ class Collect(gym.Env):
          
         if self._point_collected == len(self.point_positions):
             done = True
-            reward = 1.0
+            reward = 10.0
                 
         return self._get_obs(), reward, terminated, done, info
     

@@ -34,15 +34,15 @@ def main():
     if not os.path.exists("/app/models"):
         os.mkdir("/app/models")
     
-    env_name = 'gym/Maze-v0'
+    env_name = 'gym/Collect-v0'
     # env_name = 'PongNoFrameskip-v4'
     use_prioritization = False
     use_double = False
     use_dueling = False
     use_atari = False
-    env = make_env(env_name,sequence_length=1,maze="normal")
+    env = make_env(env_name,sequence_length=4)
     
-    n_games = 4000
+    n_games = 8000
     bs = 64
     # 0.3, 0.5 works okay for cartpole
     # 0.25, 0.25 doesn't seem to work
@@ -61,12 +61,12 @@ def main():
 
     q_eval, q_target = make_dqn_networks(env, use_double=use_double,
                                          use_dueling=use_dueling,
-                                         hidden_layers=[4096],
+                                         hidden_layers=[4096*8],
                                          use_atari=use_atari)
     dqn_actor = Actor(q_eval, q_target, policy)
     q_eval, q_target = make_dqn_networks(env, use_double=use_double,
                                          use_dueling=use_dueling,
-                                         hidden_layers=[4096],
+                                         hidden_layers=[4096*8],
                                          use_atari=use_atari)
     dqn_learner = Learner(q_eval, q_target,
                           prioritized=use_prioritization, lr=1e-4)

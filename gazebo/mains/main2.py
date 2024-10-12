@@ -27,11 +27,11 @@ def main():
     if not os.path.exists("/app/models"):
         os.mkdir("/app/models")
     
-    env_name = 'gym/Maze-v0'
+    env_name = 'gym/Collect-v0'
    
-    env = make_env(env_name,sequence_length=1,reward_type="distance",maze="normal")
+    env = make_env(env_name,sequence_length=4)
     
-    n_games = 4000
+    n_games = 8000
     bs = 64
     # 0.3, 0.5 works okay for cartpole
     # 0.25, 0.25 doesn't seem to work
@@ -39,7 +39,7 @@ def main():
 
     policy = DiscretePolicy()
 
-    networks = make_genetic_networks(env,count=40,hidden_layers=[4096,4096])
+    networks = make_genetic_networks(env,count=10,hidden_layers=[4096*2,4096*2])
     
     genetic_actor = Actor(networks, policy)
     
