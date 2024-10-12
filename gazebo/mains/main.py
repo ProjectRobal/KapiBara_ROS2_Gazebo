@@ -57,7 +57,7 @@ def main():
                                beta=0.25
                                )
 
-    policy = EpsilonGreedyPolicy(n_actions=env.action_space.n, eps_dec=1e-4)
+    policy = EpsilonGreedyPolicy(n_actions=env.action_space.n, eps_dec=1e-20)
 
     q_eval, q_target = make_dqn_networks(env, use_double=use_double,
                                          use_dueling=use_dueling,
@@ -69,7 +69,7 @@ def main():
                                          hidden_layers=[4096*8],
                                          use_atari=use_atari)
     dqn_learner = Learner(q_eval, q_target,
-                          prioritized=use_prioritization, lr=1e-4)
+                          prioritized=use_prioritization,gamma=0.1, lr=1e-4)
 
     agent = Agent(dqn_actor, dqn_learner, prioritized=use_prioritization)
     sample_mode = 'prioritized' if use_prioritization else 'uniform'

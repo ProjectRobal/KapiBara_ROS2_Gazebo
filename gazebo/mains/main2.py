@@ -39,7 +39,7 @@ def main():
 
     policy = DiscretePolicy()
 
-    networks = make_genetic_networks(env,count=10,hidden_layers=[4096*2,4096*2])
+    networks = make_genetic_networks(env,count=10,hidden_layers=[4096*8,4096*8])
     
     genetic_actor = Actor(networks, policy)
     
