@@ -253,7 +253,10 @@ class Collect(gym.Env):
         # When robot hits the wall it will get -0.5 reward and environment is terminated
         
         # default reward for every step
-        reward = -0.01
+        if self.reward_type == 'normal':
+            reward = -0.01
+        else:
+            reward = 0.0
 
         if self.reward_type == 'normal' and ( action == 0 or action == 1 ):
             reward = -0.1
