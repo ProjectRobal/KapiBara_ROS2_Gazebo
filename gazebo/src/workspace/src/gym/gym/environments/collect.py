@@ -119,6 +119,8 @@ class Collect(gym.Env):
 
         self._start = True
         
+        self._env_timer = self._node.get_clock().now().to_msg().sec
+        
         self._sim.pause()
         self._sim.reset()
         
@@ -194,6 +196,8 @@ class Collect(gym.Env):
         info = self._get_info()
         
         self._timer = self._node.get_clock().now().to_msg().sec
+        
+        self._env_timer = self._node.get_clock().now().to_msg().sec
         
         self._last_robot_positon = self._sim.get_entity_state("kapibara")[0]
 
@@ -286,13 +290,29 @@ class Collect(gym.Env):
         for distance in observation[0:4]:
             id+=1
             if distance < 0.1 or self._robot_has_hit_wall:
-                reward += -0.5
+                if self.reward_type == "normal":
+                    reward += -0.5
+                else:
+                    distances = self._get_info()["distances_to_points"]
+                    
+                    close_distance = np.min(distances)
+                    
+                    reward += -2*close_distance
+                    
                 self._node.get_logger().info(f"Robot hits the wall, terminated!, sensor id: {id}")
                 terminated = True
                 break
         
         if self._robot_has_hit_wall:
-            reward += -0.5
+            if self.reward_type == "normal":
+                    reward += -0.5
+            else:
+                distances = self._get_info()["distances_to_points"]
+                    
+                close_distance = np.min(distances)
+                    
+                reward += -2*close_distance
+                
             self._node.get_logger().info("Robot hits the wall, terminated!")
             terminated = True
         
@@ -300,7 +320,10 @@ class Collect(gym.Env):
                 
         if self._point_id_triggered in self._point_topics.keys():
             self._point_collected +=1
-            reward = 5
+            if self.reward_type == "normal":
+                reward = 5
+            else:
+                reward += 10
             self._node.get_logger().info("Robot found a point"+self._point_id_triggered)
                                     
             #self._sim.set_entity_position(self._point_id_triggered,np.array([-100.0*(self._point_collected+1),-100.0,0.4]))
@@ -319,7 +342,9 @@ class Collect(gym.Env):
             if self._node.get_clock().now().to_msg().sec - self._timer >= self._stall_time_sec:
                 terminated = True
                 self._node.get_logger().info("Robot has stalled!")
-                reward = -10.0
+                reward += -10.0
+                if self.reward_type != "normal":
+                    reward += -10*( self._node.get_clock().now().to_msg().sec - self._env_timer )
         else:
             self._timer = self._node.get_clock().now().to_msg().sec
                 
@@ -327,7 +352,10 @@ class Collect(gym.Env):
          
         if self._point_collected == len(self.point_positions):
             done = True
-            reward = 10.0
+            if self.reward_type == "normal":
+                reward = 10.0
+            else:
+                reward += 25.0 
                 
         return self._get_obs(), reward, terminated, done, info
     

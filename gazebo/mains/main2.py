@@ -29,23 +29,23 @@ def main():
     
     env_name = 'gym/Collect-v0'
    
-    env = make_env(env_name,sequence_length=4)
+    env = make_env(env_name,sequence_length=4,reward_type="genetic")
     
     n_games = 8000
-    bs = 64
-    # 0.3, 0.5 works okay for cartpole
-    # 0.25, 0.25 doesn't seem to work
-    # 0.25, 0.75 doesn't work
-
+    
+    population_size = 10
+    
     policy = DiscretePolicy()
 
-    networks = make_genetic_networks(env,count=10,hidden_layers=[4096*8,4096*8])
+    network = make_genetic_networks(env,count=population_size,hidden_layers=[4096*1,4096*1])
     
-    genetic_actor = Actor(networks, policy)
+    genetic_actor = Actor(network,population_size, policy)
     
-    genetic_learner = Learner(0.25,5)
+    genetic_learner = Learner(network,0.25,5)
 
     agent = Agent(genetic_actor, genetic_learner)
+    
+    agent.update_networks()
     
     ep_loop = EpisodeLoop(agent, env,load_checkpoint=False,filename="/app/models/genetic_simple_maze.csv")
     scores, steps_array = ep_loop.run(n_games)

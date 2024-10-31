@@ -19,9 +19,9 @@ services:
     networks:
       - internet
     build:
-      dockerfile: ./Dockerfile.prod
+      dockerfile: ./Dockerfile
       context: ./gazebo
-    runtime: nvidia
+    # runtime: nvidia
     env_file:
       - ./gazebo/env/env
     environment:
@@ -34,23 +34,24 @@ services:
       - ./gazebo/entrypoint.sh:/entrypoint.sh:rwx
       - ./gazebo/commands/:/app/cmd
       - ./gazebo/dependencies/:/app/dep
-      - ./gazebo/mains/main.py:/app/src/workspace/src/gym/main.py
-      # - ./gazebo/src:/app/src:rw
+      - ./gazebo/mains/main2.py:/app/src/workspace/src/gym/main.py
+      - ./gazebo/src:/app/src:rw
       - ./gazebo/dependencies/rosdep_package.list:/etc/ros/rosdep/sources.list.d/20-default.list
       - /dev/:/dev/
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
     
-    deploy:
-      resources:
-        reservations:
-          devices:
-          - driver: nvidia
-            count: all
-            capabilities: [gpu]
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #       - driver: amd
+    #         count: all
+    #         capabilities: [gpu]
 
     devices:
       - "/dev/dri/:/dev/dri/"
       - /dev/snd:/dev/snd
+      - "/dev/kfd:/dev/kfd"
 
     group_add:
       - video
