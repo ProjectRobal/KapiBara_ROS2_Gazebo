@@ -61,6 +61,8 @@ class Catch(gym.Env):
         
         self._max_angular_speed = 2.0
         self._max_linear_speed = mouse_speed
+
+        self.last_distance = 0
                 
         self.observation_space = spaces.Box(low, high, dtype=np.float32)
         # We have 4 actions, corresponding to "right", "up", "left", "down"
@@ -97,7 +99,7 @@ class Catch(gym.Env):
         self._env.start()
         
         # create client for step control service for KapiBara robot
-        self._robot = KapiBaraStepAgent(self._node,position=[2.0,0.0,0.0],rotation=[0.0,0.0,0],reload_agent=False,use_camera=True)
+        self._robot = KapiBaraStepAgent(self._node,max_linear_speed=2, max_angular_speed=4,position=[2.0,0.0,0.0],rotation=[0.0,0.0,0],reload_agent=False,use_camera=True)
         # create client for service to control gazebo environment
         
         self._sim = SimulationControl(self._node)
@@ -157,6 +159,10 @@ class Catch(gym.Env):
         self._timer = self._node.get_clock().now().to_msg().sec
         self._last_robot_positon = self._sim.get_entity_state("kapibara")[0]
 
+        self._get_distance()
+
+        self.last_distance = self._distance_between
+
         return observation, info
     
     def append_observations(self,observation):
@@ -202,6 +208,13 @@ class Catch(gym.Env):
         
         # default reward for every step
         reward = 0.0
+
+        if self.last_distance - self._distance_between <= 0:
+            self._node.get_logger().info("Robot moved away from target")
+            reward = -5
+        else:
+            self._node.get_logger().info("Robot moved towards target")
+            reward = 2
         
         if self._distance_between < 0.85:
             reward = 10.0
@@ -209,21 +222,23 @@ class Catch(gym.Env):
             self._node.get_logger().info("Robot catched the target!")
             
         if self._distance_between > self._max_distance:
-            reward = -10.0
+            reward = -20.0
             terminated = True
             self._node.get_logger().info("Robot has lost the target!")
             
         if self._node.get_clock().now().to_msg().sec - self._timer > self._timeout:
             terminated = True
-            reward = -1.0
+            reward = -10.0
             self._node.get_logger().info("Simulation timed out!")
             
         if self._robot_has_hit_wall:
             terminated = True
-            reward = -1.0
+            reward = -10.0
             self._node.get_logger().info("Robot hit the wall!")
     
-        info = self._get_info()        
+        info = self._get_info()  
+
+        self.last_distance = self._distance_between      
                 
         return self._get_obs(), reward, terminated, done, info
     

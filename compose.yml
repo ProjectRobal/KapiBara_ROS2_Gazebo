@@ -21,7 +21,7 @@ services:
     build:
       dockerfile: ./Dockerfile
       context: ./gazebo
-    # runtime: nvidia
+    runtime: nvidia
     env_file:
       - ./gazebo/env/env
     environment:
@@ -29,29 +29,29 @@ services:
       - GAZEBO_MASTER_URI = http://127.0.0.1:11345
       - ROS_DOMAIN_ID = 0
     volumes:
-      - ./gazebo/models:/app/src/models
+      - /media/projectrobal/WD Blue/Models:/app/src/models
       - ./gazebo/scores:/app/models
       - ./gazebo/entrypoint.sh:/entrypoint.sh:rwx
       - ./gazebo/commands/:/app/cmd
       - ./gazebo/dependencies/:/app/dep
-      - ./gazebo/mains/main2.py:/app/src/workspace/src/gym/main.py
+      - ./gazebo/mains/main.py:/app/src/workspace/src/gym/main.py
       - ./gazebo/src:/app/src:rw
       - ./gazebo/dependencies/rosdep_package.list:/etc/ros/rosdep/sources.list.d/20-default.list
       - /dev/:/dev/
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
     
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #       - driver: amd
-    #         count: all
-    #         capabilities: [gpu]
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            count: all
+            capabilities: [gpu]
 
     devices:
       - "/dev/dri/:/dev/dri/"
       - /dev/snd:/dev/snd
-      - "/dev/kfd:/dev/kfd"
+      # - "/dev/kfd:/dev/kfd"
 
     group_add:
       - video

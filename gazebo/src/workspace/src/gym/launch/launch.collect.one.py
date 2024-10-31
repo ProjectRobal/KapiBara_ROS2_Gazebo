@@ -85,6 +85,7 @@ def launch_setup(context):
                 'world': os.path.join(get_package_share_directory(pkg_name),'worlds/world.sdf'),
                 'params_file': os.path.join(get_package_share_directory(pkg_name),"config/gazebo.yaml"),
                 'verbose': 'true'
+                # 'gui':'false'
                 }.items()
         )
     

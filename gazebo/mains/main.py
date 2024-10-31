@@ -34,7 +34,7 @@ def main():
     if not os.path.exists("/app/models"):
         os.mkdir("/app/models")
     
-    env_name = 'gym/Collect-v0'
+    env_name = 'gym/Catch-v0'
     # env_name = 'PongNoFrameskip-v4'
     use_prioritization = False
     use_double = False
@@ -57,7 +57,7 @@ def main():
                                beta=0.25
                                )
 
-    policy = EpsilonGreedyPolicy(n_actions=env.action_space.n, eps_dec=1e-20)
+    policy = EpsilonGreedyPolicy(n_actions=env.action_space.n, eps_dec=1e-4)
 
     q_eval, q_target = make_dqn_networks(env, use_double=use_double,
                                          use_dueling=use_dueling,
@@ -75,7 +75,7 @@ def main():
     sample_mode = 'prioritized' if use_prioritization else 'uniform'
     ep_loop = EpisodeLoop(agent, env, memory, sample_mode=sample_mode,
                           prioritized=use_prioritization,
-                          load_checkpoint=False,filename="/app/models/dqn_simple_maze.csv")
+                          load_checkpoint=False,filename="/app/models/dqn_catch.csv")
     scores, steps_array = ep_loop.run(n_games)
             
 

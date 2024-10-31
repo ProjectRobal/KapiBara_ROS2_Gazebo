@@ -37,17 +37,17 @@ def main():
     
     policy = DiscretePolicy()
 
-    network = make_genetic_networks(env,count=population_size,hidden_layers=[4096*1,4096*1])
+    network = make_genetic_networks(env,count=population_size,hidden_layers=[4096*5,4096*5])
     
     genetic_actor = Actor(network,population_size, policy)
     
-    genetic_learner = Learner(network,0.25,5)
+    genetic_learner = Learner(network,0.01,5)
 
     agent = Agent(genetic_actor, genetic_learner)
     
     agent.update_networks()
     
-    ep_loop = EpisodeLoop(agent, env,load_checkpoint=False,filename="/app/models/genetic_simple_maze.csv")
+    ep_loop = EpisodeLoop(agent, env,load_checkpoint=False,filename="/app/models/genetic_catch.csv")
     scores, steps_array = ep_loop.run(n_games)
             
 
