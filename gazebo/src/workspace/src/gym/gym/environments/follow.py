@@ -21,6 +21,8 @@ from geometry_msgs.msg import Twist
 class Follow(gym.Env):
     metadata = {"render_modes": ["human"]}
     
+    REWARD_TYPE = Literal["normal","genetic"]
+    
     def mouse_collison_callback(self,contacts:ContactsState):
         for contact in contacts.states:
             if contact.collision1_name.find("Maze") > -1:
@@ -42,7 +44,7 @@ class Follow(gym.Env):
             
     
     
-    def __init__(self, render_mode=None,sequence_length=1,min_distance=2,max_distance=4):
+    def __init__(self, render_mode=None,reward_type:Literal[REWARD_TYPE]='normal',sequence_length=1,min_distance=1.0,max_distance=4):
 
         # Observations are dictionaries with the agent's and the target's location.
         # Each location is encoded as an element of {0, ..., `size`}^2, i.e. MultiDiscrete([size, size]).
@@ -60,6 +62,8 @@ class Follow(gym.Env):
             [-4,-4]
         ])
         
+        self.reward_type = reward_type
+        
         self._min_distance = min_distance
         self._max_distance = max_distance
         
@@ -68,7 +72,7 @@ class Follow(gym.Env):
         self._distance_between = 0.0
         
         self._max_angular_speed = 1.0
-        self._max_linear_speed = 0.25
+        self._max_linear_speed = 0.5
                 
         self.observation_space = spaces.Box(low, high, dtype=np.float32)
         # We have 4 actions, corresponding to "right", "up", "left", "down"
@@ -107,7 +111,7 @@ class Follow(gym.Env):
         self._env.start()
         
         # create client for step control service for KapiBara robot
-        self._robot = KapiBaraStepAgent(self._node,position=[(self._min_distance+self._max_distance)/2.0,0.0,0.0],rotation=[0.0,0.0,0],reload_agent=False,use_camera=True)
+        self._robot = KapiBaraStepAgent(self._node,max_linear_speed=1.0,max_angular_speed=2.5,position=[(self._min_distance+self._max_distance)/2.0,0.0,0.0],rotation=[0.0,0.0,0],reload_agent=False,use_camera=True)
         # create client for service to control gazebo environment
         
         self._sim = SimulationControl(self._node)
@@ -252,16 +256,21 @@ class Follow(gym.Env):
         
         info = self._get_info() 
         
-        if abs(self._last_distance_between - self._distance_between) > 0.25:
-            reward = -0.1
-            self._node.get_logger().info("Robot doesn't keep it's distance!")
+        if self.reward_type == 'normal':
+            if self._last_distance_between - self._distance_between < 0.0:
+                reward = -1.0
+                self._node.get_logger().info("Robot doesn't keep it's distance!")
             
         if self._distance_between < self._min_distance or self._distance_between > self._max_distance:
-            reward = -10.0
+            
+            if self.reward_type == 'normal':
+                reward = -10.0
             terminated = True
             self._node.get_logger().info("Robot has lost the target!")
+        elif self.reward_type == 'genetic':
+            reward = 1.0
             
-        if len(self._points_collection) >= self._point_pointer:
+        if self._point_pointer >= len(self._points_collection):
             done = True
             reward = 10.0
             self._node.get_logger().info("Robot has reached target!")
