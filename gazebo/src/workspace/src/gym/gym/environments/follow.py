@@ -272,7 +272,10 @@ class Follow(gym.Env):
             
         if self._point_pointer >= len(self._points_collection):
             done = True
-            reward = 10.0
+            if self.reward_type == 'normal':
+                reward = 10.0
+            else:
+                reward = 100.0
             self._node.get_logger().info("Robot has reached target!")
             
 

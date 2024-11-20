@@ -165,7 +165,7 @@ class Parking(gym.Env):
         # wait couple of steps
         self._robot.wait_for_steps()
         
-        self._sim.pause()
+        self._sim.pause()./gazebo/models
         
         observation = self._robot.get_observations()
                         
@@ -198,6 +198,7 @@ class Parking(gym.Env):
         if self._stage_number == 0:
             reward = -0.04
             
+            # if any of side sensor register a too large distance it means it is far away from wall
             if min(observation[2],observation[3]) > 0.4:
                 reward = -0.25
                 
