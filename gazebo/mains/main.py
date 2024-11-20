@@ -34,7 +34,7 @@ def main():
     if not os.path.exists("/app/models"):
         os.mkdir("/app/models")
     
-    env_name = 'gym/Follow-v0'
+    env_name = 'gym/Parking-v0'
     # env_name = 'PongNoFrameskip-v4'
     use_prioritization = False
     use_double = False
@@ -61,12 +61,12 @@ def main():
 
     q_eval, q_target = make_dqn_networks(env, use_double=use_double,
                                          use_dueling=use_dueling,
-                                         hidden_layers=[4096*8],
+                                         hidden_layers=[4096*2],
                                          use_atari=use_atari)
     dqn_actor = Actor(q_eval, q_target, policy)
     q_eval, q_target = make_dqn_networks(env, use_double=use_double,
                                          use_dueling=use_dueling,
-                                         hidden_layers=[4096*8],
+                                         hidden_layers=[4096*2],
                                          use_atari=use_atari)
     dqn_learner = Learner(q_eval, q_target,
                           prioritized=use_prioritization,gamma=0.05, lr=1e-4)
@@ -75,7 +75,7 @@ def main():
     sample_mode = 'prioritized' if use_prioritization else 'uniform'
     ep_loop = EpisodeLoop(agent, env, memory, sample_mode=sample_mode,
                           prioritized=use_prioritization,
-                          load_checkpoint=False,filename="/app/models/dqn_follow.csv")
+                          load_checkpoint=False,filename="/app/models/dqn_parking.csv")
     scores, steps_array = ep_loop.run(n_games)
             
 
