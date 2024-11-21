@@ -34,7 +34,7 @@ services:
       - ./gazebo/entrypoint.sh:/entrypoint.sh:rwx
       - ./gazebo/commands/:/app/cmd
       - ./gazebo/dependencies/:/app/dep
-      - ./gazebo/mains/main.py:/app/src/workspace/src/gym/main.py
+      - ./gazebo/mains/main2.py:/app/src/workspace/src/gym/main.py
       - ./gazebo/src:/app/src:rw
       - ./gazebo/dependencies/rosdep_package.list:/etc/ros/rosdep/sources.list.d/20-default.list
       - /dev/:/dev/

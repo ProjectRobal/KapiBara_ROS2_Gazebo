@@ -27,7 +27,7 @@ def main():
     if not os.path.exists("/app/models"):
         os.mkdir("/app/models")
     
-    env_name = 'gym/Follow-v0'
+    env_name = 'gym/Parking-v0'
    
     env = make_env(env_name,sequence_length=4,reward_type="genetic")
     
@@ -37,7 +37,7 @@ def main():
     
     policy = DiscretePolicy()
 
-    network = make_genetic_networks(env,count=population_size,hidden_layers=[4096*5,4096*5])
+    network = make_genetic_networks(env,count=population_size,hidden_layers=[4096*2,4096*2])
     
     genetic_actor = Actor(network,population_size, policy)
     
@@ -47,7 +47,7 @@ def main():
     
     agent.update_networks()
     
-    ep_loop = EpisodeLoop(agent, env,load_checkpoint=False,filename="/app/models/genetic_follow.csv")
+    ep_loop = EpisodeLoop(agent, env,load_checkpoint=False,filename="/app/models/genetic_parking.csv")
     scores, steps_array = ep_loop.run(n_games)
             
 

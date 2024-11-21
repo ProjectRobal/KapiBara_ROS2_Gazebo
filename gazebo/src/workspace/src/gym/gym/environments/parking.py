@@ -24,6 +24,8 @@ class Parking(gym.Env):
     metadata = {"render_modes": ["human"]}
     
     stages = ["searching","parking"]
+
+    REWARD_TYPE = Literal["normal","genetic"]
         
     def point_callback(self,contacts:ContactsState):
         for contact in contacts.states:
@@ -43,7 +45,7 @@ class Parking(gym.Env):
                 self._robot_has_hit_wall = True
                 return
     
-    def __init__(self, render_mode=None,sequence_length=1):
+    def __init__(self,reward_type:Literal[REWARD_TYPE] = "normal", render_mode=None,sequence_length=1):
 
         # Observations are dictionaries with the agent's and the target's location.
         # Each location is encoded as an element of {0, ..., `size`}^2, i.e. MultiDiscrete([size, size]).
@@ -54,6 +56,10 @@ class Parking(gym.Env):
         
         
         print("High shape: ",high.shape)
+
+        self.reward_type = reward_type
+
+        self.got_to_spot = False
         
         self._stall_timer = timer()
         
@@ -130,6 +136,7 @@ class Parking(gym.Env):
         self._stage_number = 0
         self._point_id_triggered = ""
         self._robot_has_hit_wall = False
+        self.got_to_spot = False
 
         del self._point_topics
      
@@ -194,46 +201,63 @@ class Parking(gym.Env):
                 
         info = self._get_info()
 
-        reward = -0.04
+        if self.reward_type == "normal":
+            reward = -0.04
+        else:
+            reward = 0.0
 
         
-
 
         for distance in observation[0:4]:
             if distance < 0.1:
-                reward = -10.0
+                if self.reward_type == "normal":
+                    reward = -10.0
+                else:
+                    reward += -(timer() - self._stall_timer)/60.0
                 self._node.get_logger().info(f"Robot hits the wall, terminated!, sensor id: {id}")
                 terminated = True
                 break
-
-        
-        # self._node.get_logger().info("Robot parking spot size: "+str(dist))
-        
-        
             
         if self._robot_has_hit_wall:
-            reward = -10.0
+            if self.reward_type == "normal":
+                reward = -10.0
+            else:
+                reward += -(timer() - self._stall_timer)/60.0
             self._node.get_logger().info("Robot hits the wall, terminated!")
             terminated = True
             
         if timer() - self._stall_timer > 60*10:
             terminated =  True
-            reward = -20.0
+            reward += -20.0
             self._node.get_logger().info("Robot timed out!")
             self._stall_timer = timer()
 
         if len(self._point_id_triggered) == 0:
 
+            
+
             # if any of side sensor register a too large distance it means it is far away from wall
             if min(observation[2],observation[3]) > 0.4:
-                reward = -1.0
+                if self.reward_type == "normal":
+                    reward = -1.0
+                else:
+                    reward += -0.05
                 self._node.get_logger().info(f"Robot moved away from wall too much")
 
         else:
             dist = abs(observation[2] - observation[3])
 
+
+            if not self.got_to_spot:
+                self.got_to_spot = True
+                if self.reward_type != "normal":
+                    reward += 50.0
+
             if dist <= 0.1:
-                reward = 10.0
+                if self.reward_type == "normal":
+                    reward = 10.0
+                else:
+                    reward += 100.0
                 self._node.get_logger().info("Robot has parked properly!")
                 done = True
             
